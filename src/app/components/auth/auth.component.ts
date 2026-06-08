@@ -14,15 +14,15 @@ import { FormsModule } from '@angular/forms';
       <div class="screen login-screen" *ngIf="mode === 'login'">
         <!-- Hero Section with bg image -->
         <div class="hero-section">
-          <img src="assets/login-hero.png" alt="Login Hero" class="hero-bg-img" />
+          <img src="/assets/login-hero.png" alt="Login Hero" class="hero-bg-img" />
           <div class="hero-overlay"></div>
           
           <!-- Logo on hero -->
           <div class="hero-logo">
-            <div class="logo-badge">
+            <!-- <div class="logo-badge">
               <span class="logo-icon-pin">📍</span>
               <span class="logo-txt">DriveGo</span>
-            </div>
+            </div> -->
           </div>
         </div>
 
@@ -84,7 +84,7 @@ import { FormsModule } from '@angular/forms';
       <div class="screen signup-screen" *ngIf="mode === 'signup'">
         <!-- Compact hero for signup -->
         <div class="hero-section hero-compact">
-          <img src="assets/login-hero.png" alt="Signup Hero" class="hero-bg-img" />
+          <img src="/assets/login-hero.png" alt="Signup Hero" class="hero-bg-img" />
           <div class="hero-overlay"></div>
           
           <div class="signup-top-bar">
@@ -293,7 +293,7 @@ import { FormsModule } from '@angular/forms';
     .input-box {
       display: flex;
       align-items: center;
-      background: #F9FAFB;
+      background: #ffffff;
       border: 1.5px solid #E5E7EB;
       border-radius: 14px;
       overflow: hidden;
@@ -447,7 +447,7 @@ export class AuthComponent {
   showPwd = false;
   isLoading = false;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
 
   handleLogin(): void {
     this.isLoading = true;

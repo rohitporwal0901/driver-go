@@ -64,14 +64,19 @@ import * as L from 'leaflet';
         </div>
 
         <!-- Car Type Selection -->
-        <div class="section-title">Aapki Car Type</div>
+        <div class="section-title">Selecting Car Type</div>
         <div class="car-types">
           <button *ngFor="let c of carTypes"
-                  class="car-chip" [class.selected]="selectedCar?.id===c.id"
+                  class="car-card" [class.selected]="selectedCar?.id===c.id"
                   [id]="'car-' + c.id"
                   (click)="selectCar(c)">
-            <span>{{ c.icon }}</span>
-            <span>{{ c.name }}</span>
+            <!-- Use real image or fallback to icon if image missing -->
+            <img [src]="'/assets/cars/' + c.id + '.png'" class="car-img" alt="{{c.name}}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+            <span class="car-icon-fallback" style="display:none">{{ c.icon }}</span>
+            
+            <span class="car-name">{{ c.name }}</span>
+            <span class="car-price" *ngIf="distance">₹{{ getEstimatedFare(c) }}</span>
+            <span class="car-price-placeholder" *ngIf="!distance">--</span>
           </button>
         </div>
 
@@ -212,17 +217,32 @@ import * as L from 'leaflet';
     .input-fake .placeholder { color:#9CA3AF; }
 
     .section-title {
-      font-family:'Outfit',sans-serif; font-size:15px; font-weight:800;
+      font-family:'Outfit',sans-serif; font-size:16px; font-weight:800;
       color:#1F2937; margin-bottom:14px; margin-top:8px;
     }
-    .car-types { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:24px; }
-    .car-chip {
-      display:flex; align-items:center; gap:6px; padding:10px 16px;
-      background:#ffffff; border-radius:24px; border:1.5px solid #E5E7EB;
-      font-family:'Inter',sans-serif; font-size:13px; font-weight:600; color:#4B5563;
-      cursor:pointer; transition:all 0.2s;
+    .car-types { 
+      display:flex; gap:12px; margin-bottom:24px; overflow-x:auto; padding-bottom:4px;
+      scrollbar-width: none; /* Hide scrollbar */
     }
-    .car-chip.selected { border-color:#F59E0B; color:#D97706; background:#fff; }
+    .car-types::-webkit-scrollbar { display: none; }
+    
+    .car-card {
+      flex-shrink:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+      width: 90px; height: 105px; padding: 10px;
+      background:#ffffff; border-radius:16px; border:1.5px solid #E5E7EB;
+      cursor:pointer; transition:all 0.2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
+    .car-card.selected { 
+      border-color:#F59E0B; background:#FFFBEB; border-width: 2px;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(245, 158, 11, 0.15);
+    }
+    .car-img { height:40px; object-fit:contain; margin-bottom: 6px; }
+    .car-icon-fallback { font-size: 28px; margin-bottom: 6px; }
+    .car-name { font-family:'Inter',sans-serif; font-size:12px; font-weight:700; color:#374151; }
+    .car-price { font-family:'Inter',sans-serif; font-size:12px; font-weight:600; color:#111827; margin-top: 2px; }
+    .car-price-placeholder { font-family:'Inter',sans-serif; font-size:12px; color:#9CA3AF; margin-top: 2px; }
     
     .routes-scroll {
       display:flex; gap:10px; overflow-x:auto; margin-bottom:28px;
@@ -456,6 +476,20 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   selectCar(c: CarType): void { 
     this.selectedCar = c; 
     this.rideState.setCarType(c); 
+    // Recalculate fare when car changes
+    if (this.distance) {
+       this.fare = this.getEstimatedFare(c);
+    }
+  }
+
+  getEstimatedFare(c: CarType): number {
+    if (!this.distance) return 0;
+    const base = 200;
+    let rate = 12;
+    if (c.id === 'sedan') rate = 14;
+    if (c.id === 'suv') rate = 18;
+    if (c.id === 'luxury') rate = 25;
+    return Math.round(base + (this.distance * rate));
   }
 
   async selectRoute(r: { from: string; to: string; km: number }): Promise<void> {
@@ -486,15 +520,14 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if (result) {
       this.distance = Math.round(result.distanceKm);
-      // Example basic fare calc (e.g. ₹200 base + ₹12/km)
-      this.fare = 200 + (this.distance * 12);
+      this.fare = this.getEstimatedFare(this.selectedCar!);
       
       this.mapSvc.drawRoute(map, 'route', result.routePoints, '#FFB800', false);
       this.mapSvc.fitBounds(map, result.routePoints);
     } else {
       // Fallback
       this.distance = Math.round(this.mockData.calculateDistance(this.pickup, this.drop));
-      this.fare = 200 + (this.distance * 12);
+      this.fare = this.getEstimatedFare(this.selectedCar!);
       
       this.mapSvc.drawRoute(map, 'route', [[this.pickup.lat, this.pickup.lng], [this.drop.lat, this.drop.lng]], '#FFB800', true);
       this.mapSvc.fitBounds(map, [[this.pickup.lat, this.pickup.lng], [this.drop.lat, this.drop.lng]]);
