@@ -87,7 +87,7 @@ import { RideStateService } from '../../services/ride-state.service';
   `,
   styles: [`
     .completed {
-      width:100%; min-height:100dvh;
+      width:100%; height:100dvh;
       background:linear-gradient(180deg,#FFFBEB 0%,#fff 35%);
       display:flex; flex-direction:column; overflow-y:auto;
     }
@@ -186,7 +186,7 @@ export class RideCompletedComponent implements OnInit {
   review = '';
   popped = false;
 
-  constructor(public router: Router, private rideState: RideStateService) {}
+  constructor(public router: Router, private rideState: RideStateService) { }
 
   ngOnInit(): void {
     this.driver = this.rideState.selectedDriver();
