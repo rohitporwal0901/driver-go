@@ -169,4 +169,104 @@ export class MapService {
   getMap(id: string): L.Map | undefined {
     return this.maps.get(id);
   }
+
+  async getCurrentLocation(): Promise<GeolocationPosition> {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error('Geolocation is not supported by your browser'));
+      } else {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        });
+      }
+    });
+  }
+
+  async searchPlaces(query: string): Promise<any[]> {
+    if (!query) return [];
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5&countrycodes=in`);
+      return await response.json();
+    } catch (e) {
+      console.error('Error searching places:', e);
+      return [];
+    }
+  }
+
+  async reverseGeocode(lat: number, lon: number): Promise<any> {
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
+      return await response.json();
+    } catch (e) {
+      console.error('Error reverse geocoding:', e);
+      return null;
+    }
+  }
+
+  async getRouteDistance(start: [number, number], end: [number, number]): Promise<{ distanceKm: number, routePoints: [number, number][] } | null> {
+    try {
+      // OSRM expects lng,lat
+      const response = await fetch(`https://router.project-osrm.org/route/v1/driving/${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson`);
+      const data = await response.json();
+      if (data.routes && data.routes.length > 0) {
+        const route = data.routes[0];
+        const distanceKm = route.distance / 1000;
+        const coordinates = route.geometry.coordinates; // array of [lng, lat]
+        const routePoints: [number, number][] = coordinates.map((c: any) => [c[1], c[0]]); // Convert to [lat, lng]
+        return { distanceKm, routePoints };
+      }
+      return null;
+    } catch (e) {
+      console.error('Error fetching route:', e);
+      return null;
+    }
+  }
+
+  async searchGooglePlaces(query: string): Promise<any[]> {
+    if (!query) return [];
+    
+    return new Promise((resolve) => {
+      if (!(window as any).google?.maps?.places) {
+        console.warn('Google Maps Places API not loaded or API key missing.');
+        resolve([]);
+        return;
+      }
+      
+      const service = new (window as any).google.maps.places.AutocompleteService();
+      service.getPlacePredictions({ input: query, componentRestrictions: { country: 'in' } }, (predictions: any, status: any) => {
+        if (status === (window as any).google.maps.places.PlacesServiceStatus.OK && predictions) {
+          resolve(predictions);
+        } else {
+          resolve([]);
+        }
+      });
+    });
+  }
+
+  async getGooglePlaceDetails(placeId: string): Promise<any> {
+    return new Promise((resolve) => {
+      if (!(window as any).google?.maps?.places) {
+        resolve(null);
+        return;
+      }
+      
+      const dummyDiv = document.createElement('div');
+      const service = new (window as any).google.maps.places.PlacesService(dummyDiv);
+      
+      service.getDetails({ placeId: placeId, fields: ['name', 'geometry', 'formatted_address'] }, (place: any, status: any) => {
+        if (status === (window as any).google.maps.places.PlacesServiceStatus.OK && place?.geometry?.location) {
+          resolve({
+            lat: place.geometry.location.lat(),
+            lng: place.geometry.location.lng(),
+            name: place.name,
+            address: place.formatted_address
+          });
+        } else {
+          resolve(null);
+        }
+      });
+    });
+  }
 }

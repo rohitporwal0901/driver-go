@@ -2,6 +2,8 @@ import { Component, OnInit, OnDestroy, ElementRef, ViewChild, AfterViewInit } fr
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { RideStateService } from '../../services/ride-state.service';
 import { MockDataService } from '../../services/mock-data.service';
 import { MapService } from '../../services/map.service';
@@ -86,7 +88,11 @@ import * as L from 'leaflet';
 
         <button class="btn-find" id="find-drivers-btn"
                 (click)="findDrivers()" [disabled]="!pickupSet || !dropSet">
-          🔍 Find Drivers
+          <span *ngIf="!distance">🔍 Find Drivers</span>
+          <span *ngIf="distance" style="display:flex; justify-content:space-between; width:100%; padding: 0 10px;">
+             <span>🔍 Find Drivers</span>
+             <span>{{ distance }} km • ₹{{ fare }}</span>
+          </span>
         </button>
       </div>
     </div>
@@ -202,7 +208,7 @@ import * as L from 'leaflet';
     
     .input-fake { flex:1; display: flex; flex-direction: column; gap: 2px; }
     .input-fake small { font-family:'Inter',sans-serif; font-size:10px; color:#9CA3AF; text-transform:uppercase; font-weight:600; letter-spacing:0.5px; }
-    .input-fake span { font-family:'Inter',sans-serif; font-size:15px; font-weight:500; color:#374151; }
+    .input-fake span { font-family:'Inter',sans-serif; font-size:15px; font-weight:500; color:#374151; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; max-width:280px; }
     .input-fake .placeholder { color:#9CA3AF; }
 
     .section-title {
@@ -292,7 +298,7 @@ import * as L from 'leaflet';
     .btn-done:disabled{ opacity:0.4; cursor:not-allowed; box-shadow:none; }
   `]
 })
-export class HomeComponent implements AfterViewInit, OnDestroy {
+export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   showSearch = false;
   fromQuery = '';
   toQuery = '';
@@ -301,9 +307,14 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   pickupSet = false;
   dropSet = false;
   activeField: 'from' | 'to' = 'from';
-  suggestions: Location[] = [];
+  suggestions: any[] = [];
   selectedCar?: CarType;
   carTypes: CarType[] = [];
+  
+  distance: number | null = null;
+  fare: number | null = null;
+  loadingLocation = false;
+  private searchSubject = new Subject<{ field: 'from' | 'to', query: string }>();
 
   popularRoutes = [
     { from: 'Ujjain', to: 'Indore', km: 55 },
@@ -323,71 +334,131 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     private mapSvc: MapService,
   ) {}
 
+  ngOnInit() {
+    this.searchSubject.pipe(
+      debounceTime(500),
+      distinctUntilChanged((prev, curr) => prev.query === curr.query)
+    ).subscribe(data => {
+      this.fetchPlaces(data.query);
+    });
+  }
+
   ngAfterViewInit(): void {
     this.carTypes = this.mockData.CAR_TYPES;
     this.selectedCar = this.carTypes[1]; // default Sedan
     this.rideState.setCarType(this.selectedCar);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       const map = this.mapSvc.createMap('home-map', [22.95, 75.82], 8);
-      // Show MP area
-      this.mapSvc.addDotMarker(map, 'ujjain', 23.1793, 75.7849, '#22C55E', 'Ujjain');
-      this.mapSvc.addDotMarker(map, 'indore', 22.7196, 75.8577, '#EF4444', 'Indore');
-      this.mapSvc.drawRoute(map, 'demo-route',
-        [[23.1793, 75.7849], [22.95, 75.82], [22.7196, 75.8577]],
-        '#FFB800', true
-      );
-      // Animate a dummy driver marker
-      this.mapSvc.addEmojiMarker(map, 'demo-driver', 22.95, 75.82, '🚗', 28, true);
+      
+      this.loadingLocation = true;
+      try {
+        const position = await this.mapSvc.getCurrentLocation();
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        
+        this.mapSvc.panTo(map, lat, lng, 13);
+        this.mapSvc.addDotMarker(map, 'my-loc', lat, lng, '#3B82F6', 'You');
+
+        const geoInfo = await this.mapSvc.reverseGeocode(lat, lng);
+        if (geoInfo) {
+          const loc: Location = {
+            lat, lng,
+            address: geoInfo.display_name,
+            name: geoInfo.display_name.split(',')[0] || 'Current Location'
+          };
+          this.pickup = loc;
+          this.fromQuery = loc.address || loc.name || '';
+          this.fromCity = this.fromQuery;
+          this.pickupSet = true;
+          this.rideState.setPickup(loc);
+          this.activeField = 'to'; // Move to next field
+        }
+      } catch(e) {
+        console.warn("Could not get location automatically:", e);
+        // Fallback demo pins
+        this.mapSvc.addDotMarker(map, 'ujjain', 23.1793, 75.7849, '#22C55E', 'Ujjain');
+        this.mapSvc.addDotMarker(map, 'indore', 22.7196, 75.8577, '#EF4444', 'Indore');
+      } finally {
+        this.loadingLocation = false;
+      }
     }, 100);
   }
 
-  ngOnDestroy(): void { this.mapSvc.removeMap('home-map'); }
+  ngOnDestroy(): void { 
+    this.mapSvc.removeMap('home-map'); 
+  }
 
   openSearch(): void {
     this.showSearch = true;
-    this.suggestions = this.mockData.POPULAR_CITIES.slice(0, 6);
+    this.suggestions = this.mockData.POPULAR_CITIES.slice(0, 8); // Show default cities initially
     this.activeField = this.pickupSet ? 'to' : 'from';
   }
 
   onFrom(): void {
     this.activeField = 'from';
-    this.suggestions = this.mockData.filterCities(this.fromQuery);
+    this.searchSubject.next({ field: 'from', query: this.fromQuery });
   }
 
   onTo(): void {
     this.activeField = 'to';
-    this.suggestions = this.mockData.filterCities(this.toQuery);
+    this.searchSubject.next({ field: 'to', query: this.toQuery });
   }
 
-  pickCity(loc: Location): void {
+  async fetchPlaces(query: string) {
+    // Using 30 default Indian cities for fast local search as requested
+    this.suggestions = this.mockData.filterCities(query);
+  }
+
+  async pickCity(loc: any): Promise<void> {
+    const finalLoc: Location = loc;
+
     if (this.activeField === 'from') {
-      this.pickup = loc; this.fromQuery = loc.name || loc.city || '';
-      this.fromCity = this.fromQuery; this.pickupSet = true;
-      this.rideState.setPickup(loc);
+      this.pickup = finalLoc; 
+      this.fromQuery = finalLoc.address || finalLoc.name || '';
+      this.fromCity = this.fromQuery; 
+      this.pickupSet = true;
+      this.rideState.setPickup(finalLoc);
       this.activeField = 'to';
     } else {
-      this.drop = loc; this.toQuery = loc.name || loc.city || '';
-      this.toCity = this.toQuery; this.dropSet = true;
-      this.rideState.setDrop(loc);
+      this.drop = finalLoc; 
+      this.toQuery = finalLoc.address || finalLoc.name || '';
+      this.toCity = this.toQuery; 
+      this.dropSet = true;
+      this.rideState.setDrop(finalLoc);
     }
     this.suggestions = [];
+
+    if (this.pickup && this.drop) {
+      await this.calculateRoute();
+    }
   }
 
-  confirmLoc(): void { this.showSearch = false; }
+  async confirmLoc(): Promise<void> { 
+    this.showSearch = false; 
+    if (this.pickup && this.drop) {
+      await this.calculateRoute();
+    }
+  }
 
-  swap(e: Event): void {
+  async swap(e: Event): Promise<void> {
     e.stopPropagation();
     [this.fromCity, this.toCity] = [this.toCity, this.fromCity];
     [this.fromQuery, this.toQuery] = [this.toQuery, this.fromQuery];
     [this.pickup, this.drop] = [this.drop, this.pickup];
     if (this.pickup) this.rideState.setPickup(this.pickup);
     if (this.drop) this.rideState.setDrop(this.drop);
+    if (this.pickup && this.drop) {
+      await this.calculateRoute();
+    }
   }
 
-  selectCar(c: CarType): void { this.selectedCar = c; this.rideState.setCarType(c); }
+  selectCar(c: CarType): void { 
+    this.selectedCar = c; 
+    this.rideState.setCarType(c); 
+  }
 
-  selectRoute(r: { from: string; to: string; km: number }): void {
+  async selectRoute(r: { from: string; to: string; km: number }): Promise<void> {
     const from = this.mockData.POPULAR_CITIES.find(c => c.name === r.from);
     const to = this.mockData.POPULAR_CITIES.find(c => c.name === r.to);
     if (from && to) {
@@ -395,6 +466,38 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
       this.fromCity = from.name || ''; this.toCity = to.name || '';
       this.pickupSet = true; this.dropSet = true;
       this.rideState.setPickup(from); this.rideState.setDrop(to);
+      await this.calculateRoute();
+    }
+  }
+
+  async calculateRoute() {
+    if (!this.pickup || !this.drop) return;
+    const map = this.mapSvc.getMap('home-map');
+    if (!map) return;
+    
+    // add markers
+    this.mapSvc.addDotMarker(map, 'pickup', this.pickup.lat, this.pickup.lng, '#22C55E', 'Pickup');
+    this.mapSvc.addDotMarker(map, 'drop', this.drop.lat, this.drop.lng, '#EF4444', 'Drop');
+
+    const result = await this.mapSvc.getRouteDistance(
+      [this.pickup.lat, this.pickup.lng],
+      [this.drop.lat, this.drop.lng]
+    );
+
+    if (result) {
+      this.distance = Math.round(result.distanceKm);
+      // Example basic fare calc (e.g. ₹200 base + ₹12/km)
+      this.fare = 200 + (this.distance * 12);
+      
+      this.mapSvc.drawRoute(map, 'route', result.routePoints, '#FFB800', false);
+      this.mapSvc.fitBounds(map, result.routePoints);
+    } else {
+      // Fallback
+      this.distance = Math.round(this.mockData.calculateDistance(this.pickup, this.drop));
+      this.fare = 200 + (this.distance * 12);
+      
+      this.mapSvc.drawRoute(map, 'route', [[this.pickup.lat, this.pickup.lng], [this.drop.lat, this.drop.lng]], '#FFB800', true);
+      this.mapSvc.fitBounds(map, [[this.pickup.lat, this.pickup.lng], [this.drop.lat, this.drop.lng]]);
     }
   }
 
