@@ -20,19 +20,13 @@ import { MockDataService } from '../../services/mock-data.service';
       <div class="search-sheet">
         <div class="sheet-handle"></div>
         <div class="anim-section">
-          <div class="car-bounce">{{ driverEmoji }}</div>
-          <div class="dots-row">
-            <span class="dot d1"></span>
-            <span class="dot d2"></span>
-            <span class="dot d3"></span>
-          </div>
-          <h3>Contacting Driver...</h3>
-          <p>{{ statusMsg }}</p>
-          <div class="progress-bar">
-            <div class="progress-fill" [style.width.%]="progress"></div>
+          <h3>Searching for driver</h3>
+          <p>Please wait while we find you the best driver<br/>nearby.</p>
+          <div class="graphic-container">
+            <img [src]="'/assets/cars/city_car_front_graphic.png'" alt="City Skyline with Car" class="city-car-img" />
           </div>
         </div>
-        <button class="btn-cancel" id="cancel-btn" (click)="cancel()">Cancel Booking</button>
+        <button class="btn-cancel" id="cancel-btn" (click)="cancel()">Cancel</button>
       </div>
     </div>
   `,
@@ -42,42 +36,21 @@ import { MockDataService } from '../../services/mock-data.service';
     .leaflet-map { width:100%; height:100%; }
     .search-sheet {
       flex:1; background:#fff; border-radius:24px 24px 0 0;
-      padding:12px 20px 40px; display:flex; flex-direction:column;
-      box-shadow:0 -4px 24px rgba(0,0,0,0.08);
+      padding:12px 24px 24px; display:flex; flex-direction:column;
+      box-shadow:0 -4px 24px rgba(0,0,0,0.08); z-index: 1000;
     }
     .sheet-handle { width:36px; height:4px; background:#E5E7EB; border-radius:4px; margin:0 auto 16px; }
-    .anim-section { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; }
-    .car-bounce { font-size:60px; animation:carBounce 1.2s ease-in-out infinite; }
-    @keyframes carBounce {
-      0%,100%{ transform:translateY(0) rotate(-3deg); }
-      50%{ transform:translateY(-14px) rotate(3deg); }
-    }
-    .dots-row { display:flex; gap:8px; }
-    .dot {
-      width:10px; height:10px; border-radius:50%; background:#FFB800;
-      animation:dotPulse 1.4s ease-in-out infinite;
-    }
-    .d2 { animation-delay:0.2s; }
-    .d3 { animation-delay:0.4s; }
-    @keyframes dotPulse {
-      0%,60%,100%{ transform:translateY(0); opacity:1; }
-      30%{ transform:translateY(-12px); opacity:0.6; }
-    }
-    h3 { font-family:'Outfit',sans-serif; font-size:22px; font-weight:700; color:#111827; margin:0; }
-    p { font-family:'Inter',sans-serif; font-size:14px; color:#6B7280; margin:0; text-align:center; }
-    .progress-bar {
-      width:80%; height:6px; background:#F3F4F6; border-radius:6px; overflow:hidden;
-    }
-    .progress-fill {
-      height:100%; background:linear-gradient(90deg,#FFB800,#FF8C00);
-      border-radius:6px; transition:width 0.3s ease;
-    }
+    .anim-section { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding-top:10px; }
+    h3 { font-family:'Outfit',sans-serif; font-size:18px; font-weight:700; color:#111827; margin:0 0 8px; }
+    p { font-family:'Inter',sans-serif; font-size:13px; color:#6B7280; margin:0; text-align:center; line-height:1.4; }
+    .graphic-container { margin-top: auto; margin-bottom: 20px; width: 100%; display: flex; justify-content: center; }
+    .city-car-img { width: 100%; max-width: 260px; object-fit: contain; }
     .btn-cancel {
-      width:100%; padding:16px; background:#fff; border:2px solid #F3F4F6;
-      border-radius:14px; font-family:'Outfit',sans-serif; font-size:16px;
+      width:100%; padding:14px; background:#fff; border:1px solid #E5E7EB;
+      border-radius:12px; font-family:'Outfit',sans-serif; font-size:15px;
       font-weight:600; color:#374151; cursor:pointer; transition:all 0.2s;
     }
-    .btn-cancel:hover { border-color:#EF4444; color:#EF4444; }
+    .btn-cancel:hover { border-color:#EF4444; color:#EF4444; background:#FEF2F2; }
   `]
 })
 export class SearchingDriverComponent implements AfterViewInit, OnDestroy {
@@ -100,7 +73,7 @@ export class SearchingDriverComponent implements AfterViewInit, OnDestroy {
     private rideState: RideStateService,
     private mock: MockDataService,
     private mapSvc: MapService,
-  ) {}
+  ) { }
 
   ngAfterViewInit(): void {
     const pickup = this.rideState.pickupLocation();
