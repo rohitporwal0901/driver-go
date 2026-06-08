@@ -412,6 +412,7 @@ import { FormsModule } from '@angular/forms';
       font-size: 14px;
       color: #6B7280;
       margin: 0;
+      margin-top: 20px;
     }
     .switch button {
       background: none;
