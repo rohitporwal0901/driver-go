@@ -51,7 +51,7 @@ import { CommonModule } from '@angular/common';
   styles: [`
     .splash {
       width: 100%;
-      height: 100vh;
+      height: 100dvh;
       position: relative;
       display: flex;
       flex-direction: column;

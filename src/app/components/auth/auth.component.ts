@@ -152,7 +152,7 @@ import { FormsModule } from '@angular/forms';
   styles: [`
     .auth-screen {
       width: 100%;
-      height: 100vh;
+      height: 100dvh;
       position: relative;
       overflow: hidden;
     }

@@ -72,7 +72,7 @@ interface Slide {
   styles: [`
     .onboard {
       width: 100%;
-      height: 100vh;
+      height: 100dvh;
       background: #ffffff;
       display: flex;
       flex-direction: column;

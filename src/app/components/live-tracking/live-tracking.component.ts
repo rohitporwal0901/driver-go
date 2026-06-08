@@ -65,7 +65,7 @@ import { Driver } from '../../models/ride.models';
     </div>
   `,
   styles: [`
-    .tracking-screen { width:100%; height:100vh; display:flex; flex-direction:column; position:relative; }
+    .tracking-screen { width:100%; height:100dvh; display:flex; flex-direction:column; position:relative; }
     .status-banner {
       position:absolute; top:0; left:0; right:0; z-index:20;
       background:#fff; padding:44px 16px 12px;

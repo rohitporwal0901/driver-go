@@ -122,7 +122,7 @@ import { Driver } from '../../models/ride.models';
     </div>
   `,
   styles: [`
-    .confirm-screen { width:100%; height:100vh; display:flex; flex-direction:column; position:relative; }
+    .confirm-screen { width:100%; height:100dvh; display:flex; flex-direction:column; position:relative; }
     .top-bar {
       position:absolute; top:0; left:0; right:0; z-index:20;
       padding:44px 16px 12px; background:rgba(255,255,255,0.95);

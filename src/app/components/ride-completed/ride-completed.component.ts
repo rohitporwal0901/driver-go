@@ -87,7 +87,7 @@ import { RideStateService } from '../../services/ride-state.service';
   `,
   styles: [`
     .completed {
-      width:100%; min-height:100vh;
+      width:100%; min-height:100dvh;
       background:linear-gradient(180deg,#FFFBEB 0%,#fff 35%);
       display:flex; flex-direction:column; overflow-y:auto;
     }

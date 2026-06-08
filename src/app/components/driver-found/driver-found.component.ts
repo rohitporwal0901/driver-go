@@ -77,7 +77,7 @@ import { Driver } from '../../models/ride.models';
     </div>
   `,
   styles: [`
-    .found-screen { width:100%; height:100vh; display:flex; flex-direction:column; }
+    .found-screen { width:100%; height:100dvh; display:flex; flex-direction:column; }
     .map-box { height:45vh; }
     .leaflet-map { width:100%; height:100%; }
     .found-sheet {

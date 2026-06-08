@@ -37,7 +37,7 @@ import { MockDataService } from '../../services/mock-data.service';
     </div>
   `,
   styles: [`
-    .search-screen { width:100%; height:100vh; display:flex; flex-direction:column; }
+    .search-screen { width:100%; height:100dvh; display:flex; flex-direction:column; }
     .map-box { height:55vh; position:relative; }
     .leaflet-map { width:100%; height:100%; }
     .search-sheet {

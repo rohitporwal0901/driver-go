@@ -85,7 +85,7 @@ import { Driver } from '../../models/ride.models';
     </div>
   `,
   styles: [`
-    .onride-screen { width:100%; height:100vh; display:flex; flex-direction:column; position:relative; }
+    .onride-screen { width:100%; height:100dvh; display:flex; flex-direction:column; position:relative; }
     .top-bar {
       position:absolute; top:40px; left:16px; right:16px; z-index:20;
       background:rgba(255,255,255,0.95); backdrop-filter:blur(8px);
