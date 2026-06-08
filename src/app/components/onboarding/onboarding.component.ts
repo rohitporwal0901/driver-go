@@ -2,115 +2,278 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
+interface Slide {
+  image: string;          // path to illustration
+  imageAlt: string;
+  title: string;
+  highlight: string;      // coloured part of title
+  body: string;
+}
+
 @Component({
   selector: 'app-onboarding',
   standalone: true,
   imports: [CommonModule],
   template: `
     <div class="onboard">
-      <div class="slides">
-        <div class="slide" *ngFor="let s of slides; let i=index" [class.active]="idx===i">
-          <div class="slide-art">
-            <div class="art-circle">
-              <span class="art-emoji">{{ s.emoji }}</span>
+
+      <!-- Slide Area -->
+      <div class="slides-wrap">
+        <div class="slide"
+             *ngFor="let s of slides; let i = index"
+             [class.active]="idx === i"
+             [class.prev]="idx > i">
+
+          <!-- Illustration Section -->
+          <div class="art-section">
+            <!-- Real image if provided -->
+            <img *ngIf="s.image"
+                 [src]="s.image" [alt]="s.imageAlt"
+                 class="slide-img" />
+            <!-- Fallback emoji for slides without images -->
+            <div *ngIf="!s.image" class="emoji-art">
+              <div class="emoji-circle">{{ s.imageAlt }}</div>
             </div>
+            <!-- Decorative arc -->
+            <div class="arc"></div>
           </div>
-          <div class="slide-text">
-            <h2>{{ s.title }}</h2>
+
+          <!-- Text Section -->
+          <div class="text-section">
+            <h2>
+              {{ s.title }}<br>
+              <span class="hl">{{ s.highlight }}</span>
+            </h2>
             <p>{{ s.body }}</p>
           </div>
         </div>
       </div>
 
+      <!-- Dots -->
       <div class="dots">
-        <span *ngFor="let s of slides; let i=index"
-              [class.active]="idx===i" (click)="idx=i"></span>
+        <span *ngFor="let s of slides; let i = index"
+              [class.active]="idx === i"
+              (click)="goTo(i)">
+        </span>
       </div>
 
+      <!-- Actions -->
       <div class="actions">
         <button class="btn-next" (click)="next()">
-          {{ idx < slides.length-1 ? 'Next →' : 'Get Started' }}
+          {{ idx < slides.length - 1 ? 'Next' : 'Get Started' }}
         </button>
-        <button class="btn-skip" *ngIf="idx<slides.length-1" (click)="skip()">Skip</button>
+        <button class="btn-skip" *ngIf="idx < slides.length - 1"
+                (click)="skip()">
+          Skip
+        </button>
       </div>
     </div>
   `,
   styles: [`
     .onboard {
-      width:100%; height:100vh;
-      background:#fff;
-      display:flex; flex-direction:column;
-      align-items:center; overflow:hidden;
+      width: 100%;
+      height: 100vh;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
     }
-    .slides { flex:1; width:100%; position:relative; }
+
+    /* ---- Slides ---- */
+    .slides-wrap {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
     .slide {
-      position:absolute; inset:0;
-      display:flex; flex-direction:column; align-items:center; justify-content:center;
-      padding: 40px 28px;
-      opacity:0; transform:translateX(50px);
-      transition:all 0.5s cubic-bezier(0.34,1.56,0.64,1);
-      pointer-events:none;
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      transform: translateX(60px);
+      transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+      pointer-events: none;
     }
-    .slide.active { opacity:1; transform:translateX(0); pointer-events:all; }
-    .slide-art {
-      flex:1; display:flex; align-items:center; justify-content:center;
-      width:100%;
-      background: linear-gradient(180deg,#FFF8E7 0%,#FFFBF0 100%);
-      border-radius: 0 0 60% 60% / 0 0 40px 40px;
-      margin:-40px -28px 32px;
-      padding-top:40px;
+    .slide.active {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: all;
     }
-    .art-circle {
-      width:140px; height:140px;
-      background:linear-gradient(135deg,#FFB800,#FF8C00);
-      border-radius:50%;
-      display:flex; align-items:center; justify-content:center;
-      font-size:72px;
-      box-shadow:0 16px 48px rgba(255,184,0,0.4);
-      animation:bounce 2s ease-in-out infinite;
+    .slide.prev {
+      opacity: 0;
+      transform: translateX(-60px);
     }
-    @keyframes bounce {
-      0%,100%{ transform:translateY(0); }
-      50%{ transform:translateY(-16px); }
+
+    /* ---- Art Section ---- */
+    .art-section {
+      height: 58%;
+      background: linear-gradient(180deg, #FFF8E7 0%, #FFF4D4 100%);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
     }
-    .slide-text { text-align:center; }
-    .slide-text h2 {
-      font-family:'Outfit',sans-serif; font-size:26px; font-weight:800;
-      color:#111827; margin:0 0 12px; line-height:1.25;
+    .slide-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center bottom;
+      display: block;
     }
-    .slide-text p {
-      font-family:'Inter',sans-serif; font-size:15px; color:#6B7280; line-height:1.65;
+    .arc {
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 40px;
+      background: #ffffff;
+      border-radius: 100% 100% 0 0 / 40px 40px 0 0;
     }
-    .dots { display:flex; gap:8px; margin-bottom:20px; }
+    .emoji-art {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+    }
+    .emoji-circle {
+      width: 140px;
+      height: 140px;
+      background: linear-gradient(135deg, #FFB800, #FF8C00);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 70px;
+      box-shadow: 0 20px 60px rgba(255, 184, 0, 0.4);
+      animation: float 2.5s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-14px); }
+    }
+
+    /* ---- Text Section ---- */
+    .text-section {
+      flex: 1;
+      padding: 28px 28px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 30px;
+      font-weight: 800;
+      color: #111827;
+      line-height: 1.2;
+      margin: 0;
+    }
+    .hl { color: #FFB800; }
+    p {
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      color: #6B7280;
+      line-height: 1.65;
+      margin: 0;
+    }
+
+    /* ---- Dots ---- */
+    .dots {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      padding: 14px 0 0;
+    }
     .dots span {
-      width:8px; height:8px; border-radius:4px; background:#E5E7EB;
-      transition:all 0.3s; cursor:pointer;
+      width: 8px;
+      height: 8px;
+      border-radius: 4px;
+      background: #E5E7EB;
+      cursor: pointer;
+      transition: all 0.3s ease;
     }
-    .dots span.active { width:28px; background:#FFB800; }
-    .actions { width:100%; padding:0 24px 48px; display:flex; flex-direction:column; gap:10px; }
+    .dots span.active {
+      width: 28px;
+      background: linear-gradient(90deg, #FFB800, #FF8C00);
+    }
+
+    /* ---- Actions ---- */
+    .actions {
+      padding: 14px 24px 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
     .btn-next {
-      width:100%; padding:18px;
-      background:linear-gradient(135deg,#FFB800,#FF8C00);
-      border:none; border-radius:16px;
-      font-family:'Outfit',sans-serif; font-size:18px; font-weight:700; color:#fff;
-      cursor:pointer; box-shadow:0 8px 24px rgba(255,184,0,0.4);
-      transition:all 0.2s;
+      width: 100%;
+      padding: 18px;
+      background: linear-gradient(135deg, #FFB800, #FF8C00);
+      border: none;
+      border-radius: 18px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 10px 28px rgba(255, 184, 0, 0.45);
+      transition: all 0.2s ease;
+      letter-spacing: 0.3px;
     }
-    .btn-next:active{ transform:scale(0.97); }
+    .btn-next:active { transform: scale(0.97); }
     .btn-skip {
-      background:none; border:none;
-      font-family:'Inter',sans-serif; font-size:15px; color:#9CA3AF; cursor:pointer;
+      background: none;
+      border: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      color: #9CA3AF;
+      cursor: pointer;
+      padding: 4px;
+      transition: color 0.2s;
     }
+    .btn-skip:hover { color: #6B7280; }
   `]
 })
 export class OnboardingComponent {
   idx = 0;
-  slides = [
-    { emoji: '🚗', title: 'Aapki Car, Hamare Driver', body: 'Aapke paas apni car hai? Bas ek professional driver hire karo aur aaram se safar karo.' },
-    { emoji: '🛣️', title: 'Ujjain se Indore, Kahi bhi', body: 'City trip ho ya outstation — hum trusted, verified drivers provide karte hain har route ke liye.' },
-    { emoji: '🔒', title: 'Safe & Verified Drivers', body: 'Saare drivers police-verified hain, experienced hain, aur aapki safety hamare liye #1 priority hai.' },
+
+  slides: Slide[] = [
+    {
+      image: 'assets/onboard-driver.png',
+      imageAlt: 'Professional driver with car',
+      title: 'Safe Rides,',
+      highlight: 'Every Time',
+      body: 'Book reliable, verified drivers for your own car and enjoy comfortable rides anytime, anywhere.',
+    },
+    {
+      image: 'assets/onboard-fast.png',
+      imageAlt: 'Fast pickup',
+      title: 'Fast Pickup,',
+      highlight: 'Less Waiting',
+      body: 'Get matched with a nearby professional driver in seconds. No delays — just go!',
+    },
+    {
+      image: 'assets/onboard-track.png',
+      imageAlt: 'Live Tracking',
+      title: 'Track Your Trip',
+      highlight: 'Live on Map',
+      body: 'Follow your driver\'s location in real time. Share your trip with loved ones for added safety.',
+    },
   ];
+
   constructor(private router: Router) {}
-  next() { this.idx < this.slides.length-1 ? this.idx++ : this.router.navigate(['/login']); }
-  skip() { this.router.navigate(['/login']); }
+
+  next(): void {
+    if (this.idx < this.slides.length - 1) {
+      this.idx++;
+    } else {
+      this.router.navigate(['/login']);
+    }
+  }
+
+  skip(): void { this.router.navigate(['/login']); }
+  goTo(i: number): void { this.idx = i; }
 }
