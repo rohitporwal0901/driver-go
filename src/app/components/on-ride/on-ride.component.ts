@@ -17,7 +17,7 @@ import { Driver } from '../../models/ride.models';
           <span>🛣️ Trip in Progress</span>
           <span class="elapsed">{{ elapsedMin }} min elapsed</span>
         </div>
-        <button class="sos-btn" id="sos-btn">🆘 SOS</button>
+        <button class="sos-btn" id="sos-btn">🚨 SOS</button>
       </div>
 
       <!-- Map -->
@@ -71,8 +71,14 @@ import { Driver } from '../../models/ride.models';
         </div>
 
         <div class="actions">
-          <button class="act-btn" id="call-btn">📞 Call</button>
-          <button class="act-btn" id="chat-btn">💬 Chat</button>
+          <button class="act-btn" id="call-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            Call
+          </button>
+          <button class="act-btn" id="chat-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            Chat
+          </button>
           <button class="act-btn danger" id="end-trip-btn" (click)="endTrip()">🏁 End Trip</button>
         </div>
       </div>
@@ -81,76 +87,90 @@ import { Driver } from '../../models/ride.models';
   styles: [`
     .onride-screen { width:100%; height:100vh; display:flex; flex-direction:column; position:relative; }
     .top-bar {
-      position:absolute; top:0; left:0; right:0; z-index:20;
-      background:#fff; padding:44px 16px 10px;
+      position:absolute; top:40px; left:16px; right:16px; z-index:20;
+      background:rgba(255,255,255,0.95); backdrop-filter:blur(8px);
+      padding:12px 16px; border-radius:16px; border:1px solid #F3F4F6;
       display:flex; align-items:center; justify-content:space-between;
-      box-shadow:0 2px 10px rgba(0,0,0,0.06);
+      box-shadow:0 4px 16px rgba(0,0,0,0.06);
     }
-    .trip-label span:first-child { display:block; font-family:'Outfit',sans-serif; font-size:18px; font-weight:700; color:#111827; }
-    .elapsed { font-family:'Inter',sans-serif; font-size:12px; color:#9CA3AF; }
+    .trip-label span:first-child { display:block; font-family:'Outfit',sans-serif; font-size:16px; font-weight:800; color:#111827; }
+    .elapsed { font-family:'Inter',sans-serif; font-size:12px; font-weight:500; color:#6B7280; }
     .sos-btn {
       background:#EF4444; color:#fff; border:none; border-radius:20px;
-      padding:8px 16px; font-family:'Outfit',sans-serif; font-size:14px; font-weight:700;
+      padding:8px 14px; font-family:'Outfit',sans-serif; font-size:14px; font-weight:800;
       cursor:pointer; animation:sosPulse 1.5s ease-in-out infinite;
+      display:flex; align-items:center; gap:4px;
     }
-    @keyframes sosPulse { 0%,100%{box-shadow:0 4px 12px rgba(239,68,68,0.4)} 50%{box-shadow:0 4px 24px rgba(239,68,68,0.7)} }
-    .map-box { flex:1; padding-top:88px; }
+    @keyframes sosPulse { 0%,100%{box-shadow:0 4px 12px rgba(239,68,68,0.3)} 50%{box-shadow:0 4px 20px rgba(239,68,68,0.6)} }
+    
+    .map-box { flex:1; }
     .leaflet-map { width:100%; height:100%; }
+    
     .ride-panel {
       background:#fff; border-radius:24px 24px 0 0;
-      padding:12px 16px 28px; box-shadow:0 -4px 24px rgba(0,0,0,0.08);
+      padding:20px 20px 28px; box-shadow:0 -4px 24px rgba(0,0,0,0.06); z-index:5;
     }
-    .sheet-handle { width:36px; height:4px; background:#E5E7EB; border-radius:4px; margin:0 auto 12px; }
-    .driver-row { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+    .sheet-handle { width:40px; height:4px; background:#E5E7EB; border-radius:4px; margin:0 auto 16px; }
+    
+    .driver-row { display:flex; align-items:center; gap:16px; margin-bottom:20px; }
     .drv-av {
-      width:48px; height:48px; background:#FFF3CD; border-radius:50%;
-      display:flex; align-items:center; justify-content:center; font-size:24px;
+      width:52px; height:52px; background:#FFFBEB; border-radius:50%;
+      display:flex; align-items:center; justify-content:center; font-size:28px;
       border:2px solid #FFB800; flex-shrink:0;
     }
     .drv-info { flex:1; }
-    .drv-info strong { display:block; font-family:'Outfit',sans-serif; font-size:15px; font-weight:700; color:#111827; }
-    .drv-info span { font-family:'Inter',sans-serif; font-size:12px; color:#6B7280; }
+    .drv-info strong { display:block; font-family:'Outfit',sans-serif; font-size:16px; font-weight:800; color:#111827; }
+    .drv-info span { font-family:'Inter',sans-serif; font-size:13px; font-weight:500; color:#6B7280; }
     .drv-right { text-align:right; }
-    .rating { font-family:'Outfit',sans-serif; font-size:14px; font-weight:700; }
+    .rating { font-family:'Outfit',sans-serif; font-size:15px; font-weight:800; }
     .speed-badge {
       background:#FFFBEB; border:1px solid #FFD466; border-radius:8px;
-      padding:3px 8px; font-family:'Outfit',sans-serif; font-size:12px; font-weight:700; color:#D97706;
-      margin-top:3px;
+      padding:4px 8px; font-family:'Outfit',sans-serif; font-size:12px; font-weight:800; color:#D97706;
+      margin-top:4px; display:inline-block;
     }
-    .trip-progress { margin-bottom:12px; }
-    .prog-row { display:flex; justify-content:space-between; margin-bottom:6px; }
-    .prog-label { font-family:'Inter',sans-serif; font-size:13px; color:#6B7280; }
-    .prog-pct { font-family:'Outfit',sans-serif; font-size:13px; font-weight:700; color:#FFB800; }
+    
+    .trip-progress { margin-bottom:16px; }
+    .prog-row { display:flex; justify-content:space-between; margin-bottom:12px; }
+    .prog-label { font-family:'Inter',sans-serif; font-size:13px; font-weight:600; color:#6B7280; }
+    .prog-pct { font-family:'Outfit',sans-serif; font-size:14px; font-weight:800; color:#F59E0B; }
     .prog-track {
-      height:18px; background:#F3F4F6; border-radius:10px; overflow:hidden;
-      position:relative;
+      height:8px; background:#F3F4F6; border-radius:4px;
+      position:relative; margin-bottom:6px;
     }
     .prog-fill {
-      height:100%; background:linear-gradient(90deg,#FFB800,#FF8C00);
-      border-radius:10px; transition:width 1s ease; position:relative;
-      display:flex; align-items:center; justify-content:flex-end;
+      height:100%; background:linear-gradient(90deg,#FCD34D,#F59E0B);
+      border-radius:4px; transition:width 1s linear; position:relative;
     }
-    .prog-car { font-size:14px; margin-right:2px; }
-    .prog-places { display:flex; justify-content:space-between; margin-top:4px; }
-    .prog-places span { font-family:'Inter',sans-serif; font-size:11px; color:#9CA3AF; }
-    .loc-summary { background:#F9FAFB; border-radius:12px; padding:8px 12px; margin-bottom:8px; }
-    .loc-row { display:flex; align-items:center; gap:8px; padding:3px 0; }
-    .dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
-    .g { background:#22C55E; } .r { background:#EF4444; }
-    .loc-row span { font-family:'Inter',sans-serif; font-size:12px; color:#374151; }
+    .prog-car {
+      position:absolute; right:-12px; top:-10px;
+      font-size:22px; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+    }
+    .prog-places { display:flex; justify-content:space-between; }
+    .prog-places span { font-family:'Inter',sans-serif; font-size:11px; font-weight:600; color:#9CA3AF; }
+    
+    .loc-summary { background:#FAFAFA; border:1px solid #F3F4F6; border-radius:12px; padding:12px; margin-bottom:12px; }
+    .loc-row { display:flex; align-items:center; gap:10px; padding:4px 0; }
+    .dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+    .g { background:#10B981; } .r { background:#EF4444; }
+    .loc-row span { font-family:'Inter',sans-serif; font-size:13px; font-weight:500; color:#374151; }
+    
     .fare-info {
       display:flex; align-items:center; justify-content:space-between;
-      padding:8px 0; border-top:1px solid #F3F4F6; margin-bottom:10px;
+      padding:12px 0; border-top:1px solid #F3F4F6; margin-bottom:12px;
     }
-    .fare-lbl { font-family:'Inter',sans-serif; font-size:14px; color:#6B7280; }
-    .fare-val { font-family:'Outfit',sans-serif; font-size:22px; font-weight:800; color:#111827; }
-    .actions { display:flex; gap:8px; }
+    .fare-lbl { font-family:'Inter',sans-serif; font-size:14px; font-weight:600; color:#6B7280; }
+    .fare-val { font-family:'Outfit',sans-serif; font-size:22px; font-weight:800; color:#111827; letter-spacing:-0.5px; }
+    
+    .actions { display:flex; gap:12px; }
     .act-btn {
-      flex:1; padding:12px 8px; border-radius:12px; border:1.5px solid #E5E7EB;
-      background:#F9FAFB; font-family:'Inter',sans-serif; font-size:12px;
-      font-weight:600; color:#374151; cursor:pointer;
+      flex:1; padding:12px 0; border-radius:14px; border:1.5px solid #E5E7EB;
+      background:#fff; font-family:'Inter',sans-serif; font-size:13px;
+      font-weight:700; color:#111827; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; gap:6px; transition:all 0.2s;
     }
+    .act-btn:active { background:#F9FAFB; transform:scale(0.98); }
     .act-btn.danger { background:#FEF2F2; border-color:#FECACA; color:#DC2626; }
+    .act-btn.danger:active { background:#FEE2E2; }
   `]
 })
 export class OnRideComponent implements AfterViewInit, OnDestroy {

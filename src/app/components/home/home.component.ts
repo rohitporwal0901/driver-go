@@ -42,21 +42,20 @@ import * as L from 'leaflet';
         <div class="sheet-handle"></div>
         <!-- Trip Input -->
         <div class="trip-inputs" (click)="openSearch()">
+          <div class="trip-connector"></div>
+          <button class="swap-btn" id="swap-btn" (click)="swap($event)">⇅</button>
+
           <div class="input-row from">
             <div class="dot green-dot"></div>
             <div class="input-fake">
-              <small>From</small>
+              <small>FROM</small>
               <span [class.placeholder]="!fromCity">{{ fromCity || 'Pickup city / location' }}</span>
             </div>
-          </div>
-          <div class="input-divider">
-            <div class="vline"></div>
-            <button class="swap-btn" id="swap-btn" (click)="swap($event)">⇅</button>
           </div>
           <div class="input-row to">
             <div class="dot red-dot"></div>
             <div class="input-fake">
-              <small>To</small>
+              <small>TO</small>
               <span [class.placeholder]="!toCity">{{ toCity || 'Destination city / location' }}</span>
             </div>
           </div>
@@ -171,64 +170,79 @@ import * as L from 'leaflet';
       background:linear-gradient(0deg,#f9fafb,transparent);
     }
     .search-sheet {
-      flex:1; background:#fff; border-radius:24px 24px 0 0;
-      padding:12px 16px 24px; overflow-y:auto;
-      box-shadow:0 -4px 24px rgba(0,0,0,0.08); z-index:5;
+      flex:1; background:#fff; border-radius:20px 20px 0 0;
+      padding:20px 20px 30px; overflow-y:auto;
+      box-shadow:0 -4px 24px rgba(0,0,0,0.06); z-index:5;
     }
-    .sheet-handle { width:36px; height:4px; background:#E5E7EB; border-radius:4px; margin:0 auto 14px; }
+    .sheet-handle { width:36px; height:4px; background:#E5E7EB; border-radius:4px; margin:0 auto 20px; }
+    
     .trip-inputs {
-      background:#F9FAFB; border-radius:16px; padding:12px; cursor:pointer;
-      border:1.5px solid #E5E7EB; transition:all 0.2s; margin-bottom:14px;
+      position: relative;
+      background:#F9FAFB; border-radius:16px; padding:16px 20px; cursor:pointer;
+      border:1px solid #F3F4F6; transition:all 0.2s; margin-bottom:24px;
     }
     .trip-inputs:active { border-color:#FFB800; }
-    .input-row { display:flex; align-items:center; gap:10px; padding:6px 0; }
-    .dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
-    .green-dot { background:#22C55E; box-shadow:0 0 0 3px rgba(34,197,94,0.2); }
-    .red-dot { background:#EF4444; box-shadow:0 0 0 3px rgba(239,68,68,0.2); }
-    .input-fake { flex:1; }
-    .input-fake small { display:block; font-family:'Inter',sans-serif; font-size:10px; color:#9CA3AF; text-transform:uppercase; }
-    .input-fake span { font-family:'Inter',sans-serif; font-size:14px; font-weight:500; color:#111827; }
-    .input-fake .placeholder { color:#9CA3AF; font-weight:400; }
-    .input-divider { display:flex; align-items:center; gap:8px; padding-left:6px; }
-    .vline { width:1px; height:14px; background:#E5E7EB; }
+    
+    .trip-connector {
+      position: absolute; top: 34px; bottom: 34px; left: 26px; width: 1px; background: #E5E7EB; z-index: 1;
+    }
     .swap-btn {
-      background:#FFF3CD; border:none; border-radius:8px; padding:4px 8px;
-      font-size:16px; cursor:pointer; color:#FFB800; font-weight:700;
+      position: absolute; left: 16px; top: 50%; transform: translateY(-50%); z-index: 3;
+      background: #FFF3CD; border: none; border-radius: 6px; width: 22px; height: 22px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; cursor: pointer; color: #D97706; font-weight: bold;
     }
+
+    .input-row { display:flex; align-items:center; gap:16px; position: relative; z-index: 2; }
+    .input-row.from { margin-bottom: 24px; }
+    
+    .dot { width:14px; height:14px; border-radius:50%; flex-shrink:0; box-sizing: border-box; }
+    .green-dot { background:#22C55E; border: 3px solid #BBF7D0; }
+    .red-dot { background:#EF4444; border: 3px solid #FECACA; }
+    
+    .input-fake { flex:1; display: flex; flex-direction: column; gap: 2px; }
+    .input-fake small { font-family:'Inter',sans-serif; font-size:10px; color:#9CA3AF; text-transform:uppercase; font-weight:600; letter-spacing:0.5px; }
+    .input-fake span { font-family:'Inter',sans-serif; font-size:15px; font-weight:500; color:#374151; }
+    .input-fake .placeholder { color:#9CA3AF; }
+
     .section-title {
-      font-family:'Outfit',sans-serif; font-size:14px; font-weight:700;
-      color:#374151; margin-bottom:10px; margin-top:4px;
+      font-family:'Outfit',sans-serif; font-size:15px; font-weight:800;
+      color:#1F2937; margin-bottom:14px; margin-top:8px;
     }
-    .car-types { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+    .car-types { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:24px; }
     .car-chip {
-      display:flex; align-items:center; gap:6px; padding:8px 14px;
-      background:#F9FAFB; border-radius:20px; border:2px solid #E5E7EB;
-      font-family:'Inter',sans-serif; font-size:13px; font-weight:500; color:#374151;
+      display:flex; align-items:center; gap:6px; padding:10px 16px;
+      background:#ffffff; border-radius:24px; border:1.5px solid #E5E7EB;
+      font-family:'Inter',sans-serif; font-size:13px; font-weight:600; color:#4B5563;
       cursor:pointer; transition:all 0.2s;
     }
-    .car-chip.selected { border-color:#FFB800; background:#FFFBEB; color:#D97706; }
+    .car-chip.selected { border-color:#F59E0B; color:#D97706; background:#fff; }
+    
     .routes-scroll {
-      display:flex; gap:8px; overflow-x:auto; margin-bottom:16px;
-      padding-bottom:4px;
+      display:flex; gap:10px; overflow-x:auto; margin-bottom:28px;
+      padding-bottom:4px; scrollbar-width: none;
     }
-    .routes-scroll::-webkit-scrollbar { height:0; }
+    .routes-scroll::-webkit-scrollbar { display: none; }
     .route-chip {
       flex-shrink:0; display:flex; align-items:center; gap:5px;
-      background:#F9FAFB; border:1.5px solid #E5E7EB; border-radius:20px;
-      padding:8px 14px; cursor:pointer; transition:all 0.2s;
+      background:#ffffff; border:1.5px solid #E5E7EB; border-radius:24px;
+      padding:10px 16px; cursor:pointer; transition:all 0.2s;
     }
-    .route-chip:active { border-color:#FFB800; background:#FFFBEB; }
-    .route-from,.route-to { font-family:'Inter',sans-serif; font-size:13px; font-weight:600; color:#111827; }
+    .route-chip:active { border-color:#FFB800; }
+    .route-from,.route-to { font-family:'Inter',sans-serif; font-size:13px; font-weight:700; color:#111827; }
     .arrow { color:#9CA3AF; font-size:12px; }
-    .route-km { font-family:'Inter',sans-serif; font-size:11px; color:#9CA3AF; }
+    .route-km { font-family:'Inter',sans-serif; font-size:12px; font-weight:500; color:#9CA3AF; }
+    
     .btn-find {
-      width:100%; padding:18px; background:linear-gradient(135deg,#FFB800,#FF8C00);
-      border:none; border-radius:16px; font-family:'Outfit',sans-serif;
-      font-size:18px; font-weight:700; color:#fff; cursor:pointer;
-      box-shadow:0 8px 24px rgba(255,184,0,0.4); transition:all 0.2s;
+      width:100%; padding:18px; 
+      background:#FCD34D; /* Light warm yellow from the image */
+      border:none; border-radius:14px; font-family:'Outfit',sans-serif;
+      font-size:18px; font-weight:800; color:#ffffff; cursor:pointer;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      transition:all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
     }
-    .btn-find:disabled { opacity:0.4; cursor:not-allowed; box-shadow:none; }
-    .btn-find:not(:disabled):active { transform:scale(0.97); }
+    .btn-find:disabled { background: #FDE68A; color: rgba(255,255,255,0.8); cursor:not-allowed; }
+    .btn-find:not(:disabled):active { transform:scale(0.98); }
 
     /* Overlay */
     .loc-overlay {

@@ -32,13 +32,15 @@ import { Driver } from '../../models/ride.models';
 
         <!-- Driver Summary -->
         <div class="driver-row">
-          <div class="drv-avatar">{{ driver?.photo }}</div>
-          <div class="drv-info">
-            <strong>{{ driver?.name }}</strong>
-            <span>{{ driver?.vehicle }} · {{ driver?.licenseNo }}</span>
-            <span class="exp-badge">{{ driver?.experience }} exp</span>
+          <div class="drv-avatar-wrap">
+            <div class="drv-avatar">{{ driver?.photo || '🧑‍✈️' }}</div>
           </div>
-          <div class="drv-rating">⭐ {{ driver?.rating }}</div>
+          <div class="drv-info">
+            <strong>{{ driver?.name || 'Driver Name' }}</strong>
+            <span class="drv-license">{{ driver?.licenseNo || 'MP09-2012-0001234' }}</span>
+            <div class="exp-badge">{{ driver?.experience || '12 years' }} exp</div>
+          </div>
+          <div class="drv-rating">⭐ {{ driver?.rating || '4.95' }}</div>
         </div>
 
         <div class="divider"></div>
@@ -46,37 +48,37 @@ import { Driver } from '../../models/ride.models';
         <!-- Trip Info -->
         <div class="trip-row">
           <div class="loc-item">
-            <div class="dot green"></div>
-            <div>
-              <small>Pickup</small>
-              <strong>{{ pickup?.address || '—' }}</strong>
-            </div>
+            <small>PICKUP</small>
+            <strong>{{ pickup?.address || pickup?.name || 'Udaipur, Rajasthan' }}</strong>
           </div>
           <div class="loc-item">
-            <div class="dot red"></div>
-            <div>
-              <small>Destination</small>
-              <strong>{{ drop?.address || '—' }}</strong>
-            </div>
+            <small>DESTINATION</small>
+            <strong>{{ drop?.address || drop?.name || 'Indore, Madhya Pradesh' }}</strong>
           </div>
         </div>
 
         <div class="divider"></div>
 
-        <!-- Car -->
+        <!-- Details -->
         <div class="meta-row">
-          <span class="meta-icon">{{ car?.icon }}</span>
-          <span class="meta-label">Your Car</span>
-          <span class="meta-val">{{ car?.name }}</span>
+          <div class="meta-left">
+            <span class="meta-icon">{{ car?.icon || '🚗' }}</span>
+            <span class="meta-label">Your Car</span>
+          </div>
+          <span class="meta-val">{{ car?.name || 'Sedan' }}</span>
         </div>
         <div class="meta-row">
-          <span class="meta-icon">📏</span>
-          <span class="meta-label">Distance</span>
+          <div class="meta-left">
+            <span class="meta-icon">📏</span>
+            <span class="meta-label">Distance</span>
+          </div>
           <span class="meta-val">{{ distance }} km</span>
         </div>
         <div class="meta-row">
-          <span class="meta-icon">⏱️</span>
-          <span class="meta-label">Est. Duration</span>
+          <div class="meta-left">
+            <span class="meta-icon">⏱️</span>
+            <span class="meta-label">Est. Duration</span>
+          </div>
           <span class="meta-val">~{{ duration }} min</span>
         </div>
 
@@ -84,23 +86,27 @@ import { Driver } from '../../models/ride.models';
 
         <!-- Payment -->
         <div class="meta-row">
-          <span class="meta-icon">💳</span>
-          <span class="meta-label">Payment</span>
-          <button class="change-btn" (click)="cyclePayment()">{{ paymentMethod }} ✎</button>
+          <div class="meta-left">
+            <span class="meta-icon">💳</span>
+            <span class="meta-label">Payment</span>
+          </div>
+          <button class="change-btn" (click)="cyclePayment()">{{ paymentMethod }} ▾</button>
         </div>
 
         <!-- Notes -->
         <div class="notes-row">
-          <textarea [(ngModel)]="notes" placeholder="Any notes for driver? (optional)"
-                    class="notes-input" rows="2" id="notes-input"></textarea>
+          <input type="text" [(ngModel)]="notes" placeholder="Any notes for driver? (optional)"
+                 class="notes-input" id="notes-input" />
         </div>
 
+        <!-- Fare Box -->
         <div class="fare-box">
           <div class="fare-breakdown">
-            <span>Base Charge</span><span>₹{{ driver?.baseCharge }}</span>
+            <span>Base Charge</span>
+            <span>₹{{ driver?.baseCharge || 250 }}</span>
           </div>
           <div class="fare-breakdown">
-            <span>₹{{ driver?.pricePerKm }}/km × {{ distance }} km</span>
+            <span>₹{{ driver?.pricePerKm || 14 }}/km × {{ distance }} km</span>
             <span>₹{{ perKmTotal }}</span>
           </div>
           <div class="fare-total-row">
@@ -133,70 +139,79 @@ import { Driver } from '../../models/ride.models';
     .leaflet-map { width:100%; height:100%; }
     .booking-sheet {
       flex:1; background:#fff; border-radius:24px 24px 0 0;
-      padding:12px 16px 24px; overflow-y:auto;
-      box-shadow:0 -4px 24px rgba(0,0,0,0.08);
+      padding:24px 20px; overflow-y:auto;
+      box-shadow:0 -4px 24px rgba(0,0,0,0.06);
     }
-    .sheet-handle { width:36px; height:4px; background:#E5E7EB; border-radius:4px; margin:0 auto 14px; }
-    .driver-row { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+    .sheet-handle { width:40px; height:4px; background:#E5E7EB; border-radius:4px; margin:0 auto 20px; }
+    
+    .driver-row { display:flex; align-items:center; gap:16px; margin-bottom:16px; }
+    .drv-avatar-wrap {
+      width:60px; height:60px; border-radius:50%; border:2.5px solid #FFB800;
+      display:flex; align-items:center; justify-content:center; flex-shrink:0;
+      padding: 3px;
+    }
     .drv-avatar {
-      width:52px; height:52px; background:#FFF3CD; border-radius:50%;
-      display:flex; align-items:center; justify-content:center; font-size:28px;
-      border:2px solid #FFB800; flex-shrink:0;
+      width:100%; height:100%; background:#FFFBEB; border-radius:50%;
+      display:flex; align-items:center; justify-content:center; font-size:32px;
     }
     .drv-info { flex:1; }
-    .drv-info strong { display:block; font-family:'Outfit',sans-serif; font-size:16px; font-weight:700; color:#111827; }
-    .drv-info span { display:block; font-family:'Inter',sans-serif; font-size:12px; color:#6B7280; }
+    .drv-info strong { display:block; font-family:'Outfit',sans-serif; font-size:17px; font-weight:800; color:#111827; letter-spacing:-0.2px; }
+    .drv-license { display:block; font-family:'Inter',sans-serif; font-size:12px; font-weight:500; color:#9CA3AF; margin-bottom:6px; }
     .exp-badge {
-      display:inline-block; background:#ECFDF5; color:#16A34A !important;
-      border-radius:6px; padding:2px 8px; font-size:11px !important; font-weight:600 !important;
-      margin-top:3px;
+      display:inline-block; background:#ECFDF5; color:#10B981;
+      border-radius:6px; padding:4px 10px; font-family:'Inter',sans-serif;
+      font-size:12px; font-weight:700;
     }
-    .drv-rating { font-family:'Outfit',sans-serif; font-size:15px; font-weight:700; }
-    .divider { height:1px; background:#F3F4F6; margin:12px 0; }
-    .trip-row { display:flex; flex-direction:column; gap:8px; }
-    .loc-item { display:flex; align-items:flex-start; gap:10px; }
-    .dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; margin-top:3px; }
-    .green { background:#22C55E; }
-    .red { background:#EF4444; }
-    .loc-item small { font-family:'Inter',sans-serif; font-size:10px; color:#9CA3AF; text-transform:uppercase; display:block; }
-    .loc-item strong { font-family:'Inter',sans-serif; font-size:13px; color:#111827; font-weight:600; }
-    .meta-row { display:flex; align-items:center; gap:10px; padding:6px 0; }
+    .drv-rating { font-family:'Outfit',sans-serif; font-size:16px; font-weight:800; color:#111827; }
+    
+    .divider { height:1px; background:#F3F4F6; margin:16px 0; }
+    
+    .trip-row { display:flex; flex-direction:column; gap:14px; }
+    .loc-item { display:flex; flex-direction:column; gap:4px; }
+    .loc-item small { font-family:'Inter',sans-serif; font-size:10px; font-weight:700; color:#9CA3AF; text-transform:uppercase; letter-spacing:0.5px; }
+    .loc-item strong { font-family:'Inter',sans-serif; font-size:14px; color:#374151; font-weight:700; }
+    
+    .meta-row { display:flex; align-items:center; justify-content:space-between; padding:8px 0; }
+    .meta-left { display:flex; align-items:center; gap:12px; }
     .meta-icon { font-size:18px; width:24px; text-align:center; }
-    .meta-label { font-family:'Inter',sans-serif; font-size:13px; color:#6B7280; flex:1; }
-    .meta-val { font-family:'Inter',sans-serif; font-size:13px; font-weight:600; color:#374151; }
+    .meta-label { font-family:'Inter',sans-serif; font-size:14px; font-weight:600; color:#6B7280; }
+    .meta-val { font-family:'Inter',sans-serif; font-size:14px; font-weight:700; color:#111827; }
+    
     .change-btn {
-      background:#FFFBEB; border:1px solid #FFB800; border-radius:8px;
-      padding:5px 12px; font-family:'Inter',sans-serif; font-size:13px;
-      font-weight:600; color:#D97706; cursor:pointer;
+      background:#ffffff; border:1.5px solid #F59E0B; border-radius:12px;
+      padding:6px 14px; font-family:'Inter',sans-serif; font-size:13px;
+      font-weight:700; color:#D97706; cursor:pointer;
     }
-    .notes-row { margin:8px 0; }
+    
+    .notes-row { margin:16px 0 20px; }
     .notes-input {
-      width:100%; border:1.5px solid #E5E7EB; border-radius:12px;
-      padding:10px 12px; font-family:'Inter',sans-serif; font-size:14px; color:#374151;
-      resize:none; outline:none; transition:border-color 0.2s; box-sizing:border-box;
+      width:100%; border:1px solid #F3F4F6; border-radius:12px;
+      padding:14px 16px; font-family:'Inter',sans-serif; font-size:14px; color:#374151;
+      outline:none; transition:border-color 0.2s; box-sizing:border-box;
+      background: #FAFAFA;
     }
-    .notes-input:focus { border-color:#FFB800; }
+    .notes-input:focus { border-color:#FFB800; background: #fff; }
     .notes-input::placeholder { color:#9CA3AF; }
+    
     .fare-box {
-      background:linear-gradient(135deg,#FFFBEB,#FFF3CD);
-      border-radius:14px; padding:14px; margin:10px 0;
-      border:1px solid rgba(255,184,0,0.3);
+      background:#FFFBEB; border-radius:16px; padding:20px; margin-bottom:24px;
     }
-    .fare-breakdown { display:flex; justify-content:space-between; margin-bottom:6px; }
-    .fare-breakdown span { font-family:'Inter',sans-serif; font-size:13px; color:#6B7280; }
+    .fare-breakdown { display:flex; justify-content:space-between; margin-bottom:10px; }
+    .fare-breakdown span { font-family:'Inter',sans-serif; font-size:13px; font-weight:500; color:#6B7280; }
     .fare-total-row {
       display:flex; justify-content:space-between; align-items:center;
-      border-top:1px dashed rgba(255,184,0,0.4); padding-top:8px; margin-top:8px;
+      border-top:1px dashed rgba(217,119,6,0.3); padding-top:14px; margin-top:14px;
     }
-    .fare-total-row span:first-child { font-family:'Outfit',sans-serif; font-size:15px; font-weight:700; color:#111827; }
-    .total-amt { font-family:'Outfit',sans-serif; font-size:26px; font-weight:800; color:#D97706; }
+    .fare-total-row span:first-child { font-family:'Outfit',sans-serif; font-size:16px; font-weight:800; color:#111827; }
+    .total-amt { font-family:'Outfit',sans-serif; font-size:28px; font-weight:800; color:#F59E0B; letter-spacing:-0.5px; }
+    
     .btn-confirm {
-      width:100%; padding:18px; background:linear-gradient(135deg,#FFB800,#FF8C00);
-      border:none; border-radius:16px; font-family:'Outfit',sans-serif;
-      font-size:18px; font-weight:700; color:#fff; cursor:pointer;
-      box-shadow:0 8px 24px rgba(255,184,0,0.4); transition:all 0.2s;
+      width:100%; padding:18px; background:#F59E0B;
+      border:none; border-radius:14px; font-family:'Outfit',sans-serif;
+      font-size:18px; font-weight:800; color:#fff; cursor:pointer;
+      transition:all 0.2s;
     }
-    .btn-confirm:active { transform:scale(0.97); }
+    .btn-confirm:active { transform:scale(0.98); }
   `]
 })
 export class ConfirmRideComponent implements AfterViewInit, OnDestroy {
