@@ -11,111 +11,139 @@ import { Driver } from '../../models/ride.models';
   imports: [CommonModule],
   template: `
     <div class="tracking-screen">
-      <!-- Status Banner -->
-      <div class="status-banner">
-        <div class="status-left">
-          <span class="status-label">{{ statusLabel }}</span>
-          <span class="eta-text">Arriving in <strong>{{ etaMin }} min</strong></span>
-        </div>
-        <div class="status-icon">{{ statusEmoji }}</div>
+      <!-- Top Pill -->
+      <div class="eta-pill">
+        <span class="pill-dot"></span>
+        <span>{{ statusLabel }}: <strong>{{ etaMin }} min</strong></span>
+        <span class="status-icon">{{ statusEmoji }}</span>
       </div>
 
       <!-- Map -->
-      <div class="map-box">
+      <div class="map-container">
         <div id="track-map" class="leaflet-map"></div>
       </div>
 
-      <!-- Driver Panel -->
-      <div class="driver-panel">
+    <!-- Bottom Sheet -->
+      <div class="driver-sheet">
         <div class="sheet-handle"></div>
+
+        <div class="otp-box">
+          <span class="otp-label">Share OTP to start ride</span>
+          <div class="otp-code">5 9 2 4</div>
+        </div>
+
         <div class="driver-row">
-          <div class="drv-avatar">{{ driver?.photo }}</div>
+          <div class="drv-avatar-ring">
+            <div class="drv-avatar">{{ driver?.photo }}</div>
+          </div>
           <div class="drv-info">
             <strong>{{ driver?.name }}</strong>
-            <span>{{ driver?.vehicle }}</span>
-            <span class="plate">{{ driver?.licenseNo }}</span>
+            <span class="rating">⭐ {{ driver?.rating }}</span>
           </div>
-          <div class="right-col">
-            <div class="rating">⭐ {{ driver?.rating }}</div>
-            <button class="call-mini" id="track-call-btn">📞</button>
-          </div>
-        </div>
-
-        <div class="loc-summary">
-          <div class="loc-row">
-            <div class="dot green"></div>
-            <span>{{ pickup?.address || '—' }}</span>
-          </div>
-          <div class="loc-row">
-            <div class="dot red"></div>
-            <span>{{ drop?.address || '—' }}</span>
+          <div class="drv-vehicle">
+            <div class="drv-plate">{{ driver?.licenseNo }}</div>
+            <span class="drv-model">White Swift Dzire</span>
           </div>
         </div>
 
-        <div class="eta-bar">
-          <div class="eta-progress" [style.width.%]="arrivalProgress"></div>
+        <div class="eta-large">
+           <span class="eta-val">{{ etaMin }}</span><span class="eta-unit">min</span>
+        </div>
+        <div class="eta-sub">{{ statusLabel }}</div>
+
+        <div class="progress-container">
+          <div class="prog-track">
+            <div class="prog-fill" [style.width.%]="arrivalProgress">
+              <div class="prog-car">🚗</div>
+            </div>
+          </div>
         </div>
 
         <div class="actions-row">
-          <button class="act" id="track-msg-btn">💬 Message</button>
-          <button class="act danger" id="track-sos-btn">🆘 SOS</button>
-          <button class="act" id="track-share-btn">🔗 Share</button>
+          <button class="act-btn"><span class="icon">📞</span> Call</button>
+          <button class="act-btn"><span class="icon">💬</span> Chat</button>
+          <button class="act-btn danger">Cancel</button>
         </div>
       </div>
     </div>
   `,
   styles: [`
-    .tracking-screen { width:100%; height:100dvh; display:flex; flex-direction:column; position:relative; }
-    .status-banner {
-      position:absolute; top:0; left:0; right:0; z-index:20;
-      background:#fff; padding:44px 16px 12px;
-      display:flex; align-items:center; justify-content:space-between;
-      box-shadow:0 2px 12px rgba(0,0,0,0.06);
-    }
-    .status-label { display:block; font-family:'Outfit',sans-serif; font-size:18px; font-weight:700; color:#111827; }
-    .eta-text { font-family:'Inter',sans-serif; font-size:13px; color:#6B7280; }
-    .eta-text strong { color:#FFB800; }
-    .status-icon { font-size:32px; animation:statusBounce 1.5s ease-in-out infinite; }
-    @keyframes statusBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
-    .map-box { flex:1; padding-top:90px; }
+    .tracking-screen { width:100%; height:100dvh; position:relative; overflow:hidden; }
+    .map-container { position:absolute; inset:0; z-index:1; }
     .leaflet-map { width:100%; height:100%; }
-    .driver-panel {
+    
+    .eta-pill {
+      position:absolute; top: calc(16px + env(safe-area-inset-top, 0px)); left:50%; transform:translateX(-50%);
+      background:#111827; color:#fff; border-radius:30px; padding:10px 16px;
+      display:flex; align-items:center; gap:8px; z-index:20;
+      box-shadow:0 4px 12px rgba(0,0,0,0.15); font-family:'Inter',sans-serif; font-size:14px;
+      white-space:nowrap;
+    }
+    .pill-dot { width:8px; height:8px; border-radius:50%; background:#10B981; animation:blink 1.5s infinite; }
+    @keyframes blink { 0%,100%{opacity:0.3} 50%{opacity:1} }
+    .eta-pill strong { color:#FFB800; font-weight:700; }
+    .status-icon { margin-left:4px; font-size:16px; }
+    
+    .driver-sheet {
+      position:absolute; bottom:0; left:0; right:0; z-index:20;
       background:#fff; border-radius:24px 24px 0 0;
-      padding:12px 16px 32px; box-shadow:0 -4px 24px rgba(0,0,0,0.08);
+      padding:16px 20px max(24px, env(safe-area-inset-bottom));
+      box-shadow:0 -8px 30px rgba(0,0,0,0.06);
     }
-    .sheet-handle { width:36px; height:4px; background:#E5E7EB; border-radius:4px; margin:0 auto 12px; }
-    .driver-row { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+    .sheet-handle { width:36px; height:4px; background:#E5E7EB; border-radius:4px; margin:0 auto 16px; }
+    
+    .otp-box {
+      background: #F3F4F6; border-radius: 12px; padding: 12px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px; border: 1px dashed #D1D5DB;
+    }
+    .otp-label { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; color: #4B5563; }
+    .otp-code { font-family: 'Outfit', sans-serif; font-size: 22px; font-weight: 800; color: #111827; letter-spacing: 4px; }
+    
+    .driver-row { display:flex; align-items:center; margin-bottom:20px; }
+    .drv-avatar-ring {
+      padding:3px; border-radius:50%; background:linear-gradient(135deg,#FFB800,#FF8C00);
+      margin-right:12px; display:flex; align-items:center; justify-content:center; flex-shrink: 0;
+    }
     .drv-avatar {
-      width:50px; height:50px; background:#FFF3CD; border-radius:50%;
-      display:flex; align-items:center; justify-content:center; font-size:26px;
-      border:2px solid #FFB800; flex-shrink:0;
+      width:48px; height:48px; background:#fff; border-radius:50%;
+      display:flex; align-items:center; justify-content:center; font-size:26px; border:2px solid #fff;
     }
-    .drv-info { flex:1; }
-    .drv-info strong { display:block; font-family:'Outfit',sans-serif; font-size:15px; font-weight:700; color:#111827; }
-    .drv-info span { display:block; font-family:'Inter',sans-serif; font-size:12px; color:#6B7280; }
-    .plate { font-weight:600 !important; color:#374151 !important; }
-    .right-col { display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
-    .rating { font-family:'Outfit',sans-serif; font-size:15px; font-weight:700; }
-    .call-mini {
-      background:#ECFDF5; border:none; border-radius:10px; padding:6px 10px;
-      font-size:16px; cursor:pointer;
+    .drv-info { flex:1; display:flex; flex-direction:column; min-width:0; }
+    .drv-info strong { font-family:'Outfit',sans-serif; font-size:17px; font-weight:800; color:#111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .rating { font-family:'Inter',sans-serif; font-size:13px; font-weight:600; color:#4B5563; }
+    
+    .drv-vehicle { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; margin-left: 8px; }
+    .drv-plate {
+      background:#F3F4F6; border:1px solid #E5E7EB; border-radius:6px;
+      padding:4px 8px; font-family:'Inter',sans-serif; font-size:13px;
+      font-weight:800; color:#111827; letter-spacing:0.5px; margin-bottom: 2px;
     }
-    .loc-summary { background:#F9FAFB; border-radius:12px; padding:10px 12px; margin-bottom:10px; }
-    .loc-row { display:flex; align-items:center; gap:10px; padding:3px 0; }
-    .dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
-    .green { background:#22C55E; }
-    .red { background:#EF4444; }
-    .loc-row span { font-family:'Inter',sans-serif; font-size:12px; color:#374151; }
-    .eta-bar { height:4px; background:#F3F4F6; border-radius:4px; overflow:hidden; margin-bottom:12px; }
-    .eta-progress { height:100%; background:linear-gradient(90deg,#FFB800,#FF8C00); transition:width 1s ease; }
-    .actions-row { display:flex; gap:8px; }
-    .act {
-      flex:1; padding:10px; background:#F9FAFB; border:1.5px solid #E5E7EB;
-      border-radius:12px; font-family:'Inter',sans-serif; font-size:12px;
-      font-weight:600; color:#374151; cursor:pointer; transition:all 0.2s;
+    .drv-model { font-family: 'Inter', sans-serif; font-size: 11px; color: #6B7280; font-weight: 500; }
+    
+    .eta-large { text-align:center; font-family:'Outfit',sans-serif; margin-bottom:4px; }
+    .eta-val { font-size:36px; font-weight:800; color:#111827; line-height:1; }
+    .eta-unit { font-size:16px; font-weight:600; color:#6B7280; margin-left:4px; }
+    .eta-sub { text-align:center; font-family:'Inter',sans-serif; font-size:14px; color:#10B981; font-weight:600; margin-bottom:20px; }
+    
+    .progress-container { margin-bottom:24px; padding:0 10px; }
+    .prog-track { position:relative; height:4px; background:#F3F4F6; border-radius:2px; margin: 20px 0; }
+    .prog-fill { position:absolute; top:0; left:0; height:100%; background:#FFB800; border-radius:2px; transition:width 1s linear; }
+    .prog-car {
+      position:absolute; top:50%; transform:translate(50%, -50%) scaleX(-1);
+      right:0; font-size:24px; transition:right 1s linear; z-index:2; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.1));
     }
-    .act.danger { background:#FEF2F2; border-color:#FECACA; color:#EF4444; }
-    .act:active { opacity:0.7; }
+    
+    .actions-row { display:flex; gap:12px; }
+    .act-btn {
+      flex:1; padding:14px 0; border-radius:16px; border:1px solid #E5E7EB; background:#ffffff;
+      font-family:'Inter',sans-serif; font-size:14px; font-weight:700; color:#374151;
+      display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.2s ease;
+    }
+    .act-btn .icon { font-size: 16px; }
+    .act-btn:active { background:#F9FAFB; transform:scale(0.98); }
+    .act-btn.danger { color:#EF4444; background:#FEF2F2; border-color:#FECACA; }
   `]
 })
 export class LiveTrackingComponent implements AfterViewInit, OnDestroy {

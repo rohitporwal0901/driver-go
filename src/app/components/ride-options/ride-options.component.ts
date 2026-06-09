@@ -79,10 +79,10 @@ import { Driver } from '../../models/ride.models';
     </div>
   `,
   styles: [`
-    .drivers-screen { width:100%; height:100dvh; display:flex; flex-direction:column; position:relative; }
+    .drivers-screen { width:100%; height:100dvh; display:flex; flex-direction:column; position:relative; overflow:hidden; }
     .top-bar {
       position:absolute; top:0; left:0; right:0; z-index:20;
-      padding:44px 16px 12px; background:rgba(255,255,255,0.95);
+      padding: calc(16px + env(safe-area-inset-top, 0px)) 16px 12px; background:rgba(255,255,255,0.95);
       backdrop-filter:blur(8px); display:flex; align-items:center; gap:12px;
       box-shadow:0 2px 12px rgba(0,0,0,0.06);
     }
@@ -94,17 +94,17 @@ import { Driver } from '../../models/ride.models';
     .route-info { flex:1; }
     .route-text { display:block; font-family:'Outfit',sans-serif; font-size:16px; font-weight:700; color:#111827; }
     .route-meta { font-family:'Inter',sans-serif; font-size:12px; color:#6B7280; }
-    .map-box { height:42vh; }
+    .map-box { height:45dvh; padding-top: calc(70px + env(safe-area-inset-top, 0px)); box-sizing: border-box; }
     .leaflet-map { width:100%; height:100%; }
     .driver-sheet {
       flex:1; background:#fff; border-radius:20px 20px 0 0;
-      padding:20px 16px 24px; overflow-y:auto;
-      box-shadow:0 -4px 24px rgba(0,0,0,0.06);
+      padding:20px 16px max(24px, env(safe-area-inset-bottom)); overflow-y:auto;
+      box-shadow:0 -4px 24px rgba(0,0,0,0.06); z-index: 10;
     }
     .sheet-handle { width:40px; height:4px; background:#E5E7EB; border-radius:4px; margin:0 auto 16px; }
     .sheet-header { margin-bottom:16px; }
     .sheet-header h3 { font-family:'Outfit',sans-serif; font-size:18px; font-weight:800; color:#111827; margin:0 0 12px; }
-    .filter-chips { display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none; }
+    .filter-chips { display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none; -webkit-overflow-scrolling: touch; }
     .filter-chips::-webkit-scrollbar { display:none; }
     .filter-chip {
       flex-shrink:0; padding:8px 16px; border-radius:20px; border:1.5px solid #E5E7EB;
@@ -115,7 +115,7 @@ import { Driver } from '../../models/ride.models';
     
     .driver-list { display:flex; flex-direction:column; gap:12px; margin-bottom:24px; }
     .driver-card {
-      display:flex; align-items:flex-start; gap:14px; padding:16px;
+      display:flex; align-items:flex-start; gap:12px; padding:16px;
       background:#ffffff; border-radius:16px; border:2px solid transparent;
       cursor:pointer; transition:all 0.2s; box-shadow:0 2px 12px rgba(0,0,0,0.02);
     }
@@ -123,46 +123,46 @@ import { Driver } from '../../models/ride.models';
     .driver-card.selected { border-color:#FFB800; background:#ffffff; box-shadow:0 4px 16px rgba(255,184,0,0.1); }
     
     .driver-avatar {
-      width:56px; height:56px; background:#FFFBEB; border-radius:50%;
-      display:flex; align-items:center; justify-content:center; font-size:32px;
-      border:2.5px solid #FFB800; flex-shrink:0;
+      width:50px; height:50px; background:#FFFBEB; border-radius:50%;
+      display:flex; align-items:center; justify-content:center; font-size:28px;
+      border:2px solid #FFB800; flex-shrink:0;
     }
-    .driver-info { flex:1; }
+    .driver-info { flex:1; min-width: 0; }
     .driver-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
-    .driver-top strong { font-family:'Outfit',sans-serif; font-size:16px; font-weight:800; color:#111827; letter-spacing:-0.2px; }
-    .rating { font-family:'Inter',sans-serif; font-size:13px; color:#374151; font-weight:700; }
+    .driver-top strong { font-family:'Outfit',sans-serif; font-size:15px; font-weight:800; color:#111827; letter-spacing:-0.2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .rating { font-family:'Inter',sans-serif; font-size:12px; color:#374151; font-weight:700; flex-shrink: 0; margin-left: 4px; }
     
     .driver-meta { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; }
     .tag {
-      background:#F3F4F6; border-radius:4px; padding:4px 8px;
-      font-family:'Inter',sans-serif; font-size:11px; font-weight:500; color:#6B7280;
+      background:#F3F4F6; border-radius:4px; padding:4px 6px;
+      font-family:'Inter',sans-serif; font-size:10px; font-weight:500; color:#6B7280;
     }
-    .driver-langs { display:flex; gap:6px; }
+    .driver-langs { display:flex; gap:6px; flex-wrap: wrap; }
     .lang {
-      background:#EFF6FF; border-radius:4px; padding:4px 8px;
-      font-family:'Inter',sans-serif; font-size:11px; font-weight:600; color:#2563EB;
+      background:#EFF6FF; border-radius:4px; padding:4px 6px;
+      font-family:'Inter',sans-serif; font-size:10px; font-weight:600; color:#2563EB;
     }
     
-    .driver-price { text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
-    .price { font-family:'Outfit',sans-serif; font-size:22px; font-weight:800; color:#111827; letter-spacing:-0.5px; }
-    .driver-price small { font-family:'Inter',sans-serif; font-size:11px; font-weight:500; color:#9CA3AF; margin-top:-4px; }
+    .driver-price { text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex-shrink: 0; margin-left: 8px; }
+    .price { font-family:'Outfit',sans-serif; font-size:18px; font-weight:800; color:#111827; letter-spacing:-0.5px; }
+    .driver-price small { font-family:'Inter',sans-serif; font-size:10px; font-weight:500; color:#9CA3AF; }
     
     .select-dot {
-      width:22px; height:22px; border-radius:50%; border:2px solid #D1D5DB; margin-top:8px;
+      width:20px; height:20px; border-radius:50%; border:2px solid #D1D5DB; margin-top:6px;
       display:flex; align-items:center; justify-content:center; transition:all 0.2s; background:#fff;
     }
     .select-dot.active { border-color:#FFB800; }
-    .inner { width:12px; height:12px; border-radius:50%; background:transparent; transition:all 0.2s; }
+    .inner { width:10px; height:10px; border-radius:50%; background:transparent; transition:all 0.2s; }
     .select-dot.active .inner { background:#FFB800; }
     
     .btn-confirm {
       width:100%; padding:18px; 
-      background:#FCD34D;
+      background:#F59E0B;
       border:none; border-radius:14px; font-family:'Outfit',sans-serif;
       font-size:18px; font-weight:800; color:#ffffff; cursor:pointer;
       text-shadow: 0 1px 2px rgba(0,0,0,0.1); transition:all 0.2s;
     }
-    .btn-confirm:disabled { opacity:0.4; cursor:not-allowed; box-shadow:none; }
+    .btn-confirm:disabled { background: #FCD34D; color: rgba(255,255,255,0.8); cursor:not-allowed; box-shadow:none; }
     .btn-confirm:not(:disabled):active { transform:scale(0.97); }
   `]
 })

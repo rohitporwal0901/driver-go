@@ -29,16 +29,17 @@ import { Driver } from '../../models/ride.models';
       <div class="ride-panel">
         <div class="sheet-handle"></div>
 
-        <!-- Driver -->
         <div class="driver-row">
-          <div class="drv-av">{{ driver?.photo }}</div>
+          <div class="drv-avatar-ring">
+            <div class="drv-avatar">{{ driver?.photo }}</div>
+          </div>
           <div class="drv-info">
             <strong>{{ driver?.name }}</strong>
-            <span>Driving your car</span>
+            <span class="rating">⭐ {{ driver?.rating }}</span>
           </div>
-          <div class="drv-right">
-            <div class="rating">⭐ {{ driver?.rating }}</div>
-            <div class="speed-badge">{{ currentSpeed }} km/h</div>
+          <div class="drv-vehicle">
+            <div class="drv-plate">{{ driver?.licenseNo || 'MH 01 AB 1234' }}</div>
+            <div class="speed-badge"><span style="font-size:10px;">⚡</span> {{ currentSpeed }} km/h</div>
           </div>
         </div>
 
@@ -87,7 +88,7 @@ import { Driver } from '../../models/ride.models';
   styles: [`
     .onride-screen { width:100%; height:100dvh; display:flex; flex-direction:column; position:relative; }
     .top-bar {
-      position:absolute; top:40px; left:16px; right:16px; z-index:20;
+      position:absolute; top:calc(16px + env(safe-area-inset-top, 0px)); left:16px; right:16px; z-index:20;
       background:rgba(255,255,255,0.95); backdrop-filter:blur(8px);
       padding:12px 16px; border-radius:16px; border:1px solid #F3F4F6;
       display:flex; align-items:center; justify-content:space-between;
@@ -108,25 +109,33 @@ import { Driver } from '../../models/ride.models';
     
     .ride-panel {
       background:#fff; border-radius:24px 24px 0 0;
-      padding:20px 20px 28px; box-shadow:0 -4px 24px rgba(0,0,0,0.06); z-index:5;
+      padding:20px 20px max(28px, env(safe-area-inset-bottom)); box-shadow:0 -8px 30px rgba(0,0,0,0.06); z-index:5;
     }
     .sheet-handle { width:40px; height:4px; background:#E5E7EB; border-radius:4px; margin:0 auto 16px; }
     
-    .driver-row { display:flex; align-items:center; gap:16px; margin-bottom:20px; }
-    .drv-av {
-      width:52px; height:52px; background:#FFFBEB; border-radius:50%;
-      display:flex; align-items:center; justify-content:center; font-size:28px;
-      border:2px solid #FFB800; flex-shrink:0;
+    .driver-row { display:flex; align-items:center; margin-bottom:20px; }
+    .drv-avatar-ring {
+      padding:3px; border-radius:50%; background:linear-gradient(135deg,#FFB800,#FF8C00);
+      margin-right:12px; display:flex; align-items:center; justify-content:center; flex-shrink: 0;
     }
-    .drv-info { flex:1; }
-    .drv-info strong { display:block; font-family:'Outfit',sans-serif; font-size:16px; font-weight:800; color:#111827; }
-    .drv-info span { font-family:'Inter',sans-serif; font-size:13px; font-weight:500; color:#6B7280; }
-    .drv-right { text-align:right; }
-    .rating { font-family:'Outfit',sans-serif; font-size:15px; font-weight:800; }
+    .drv-avatar {
+      width:48px; height:48px; background:#fff; border-radius:50%;
+      display:flex; align-items:center; justify-content:center; font-size:26px; border:2px solid #fff;
+    }
+    .drv-info { flex:1; display:flex; flex-direction:column; min-width:0; }
+    .drv-info strong { font-family:'Outfit',sans-serif; font-size:17px; font-weight:800; color:#111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .rating { font-family:'Inter',sans-serif; font-size:13px; font-weight:600; color:#4B5563; }
+    
+    .drv-vehicle { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; margin-left: 8px; }
+    .drv-plate {
+      background:#F3F4F6; border:1px solid #E5E7EB; border-radius:6px;
+      padding:4px 8px; font-family:'Inter',sans-serif; font-size:13px;
+      font-weight:800; color:#111827; letter-spacing:0.5px; margin-bottom: 2px;
+    }
     .speed-badge {
-      background:#FFFBEB; border:1px solid #FFD466; border-radius:8px;
-      padding:4px 8px; font-family:'Outfit',sans-serif; font-size:12px; font-weight:800; color:#D97706;
-      margin-top:4px; display:inline-block;
+      background:#111827; border:1px solid #374151; border-radius:10px;
+      padding:4px 8px; font-family:'Outfit',sans-serif; font-size:13px; font-weight:800; color:#10B981;
+      margin-top:6px; display:inline-flex; align-items:center; gap:4px; box-shadow:0 4px 12px rgba(0,0,0,0.1);
     }
     
     .trip-progress { margin-bottom:16px; }
@@ -142,35 +151,35 @@ import { Driver } from '../../models/ride.models';
       border-radius:4px; transition:width 1s linear; position:relative;
     }
     .prog-car {
-      position:absolute; right:-12px; top:-10px;
-      font-size:22px; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.15));
-      transform: scaleX(-1);
+      position:absolute; right:0; top:50%;
+      font-size:24px; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+      transform: translate(50%, -50%) scaleX(-1);
     }
-    .prog-places { display:flex; justify-content:space-between; }
-    .prog-places span { font-family:'Inter',sans-serif; font-size:11px; font-weight:600; color:#9CA3AF; }
+    .prog-places { display:flex; justify-content:space-between; margin-top:10px; }
+    .prog-places span { font-family:'Inter',sans-serif; font-size:12px; font-weight:600; color:#9CA3AF; }
     
-    .loc-summary { background:#FAFAFA; border:1px solid #F3F4F6; border-radius:12px; padding:12px; margin-bottom:12px; }
-    .loc-row { display:flex; align-items:center; gap:10px; padding:4px 0; }
+    .loc-summary { background:#F9FAFB; border:1px solid #F3F4F6; border-radius:16px; padding:16px; margin-bottom:16px; }
+    .loc-row { display:flex; align-items:center; gap:12px; padding:4px 0; }
     .dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
     .g { background:#10B981; } .r { background:#EF4444; }
-    .loc-row span { font-family:'Inter',sans-serif; font-size:13px; font-weight:500; color:#374151; }
+    .loc-row span { font-family:'Inter',sans-serif; font-size:14px; font-weight:500; color:#374151; }
     
     .fare-info {
       display:flex; align-items:center; justify-content:space-between;
-      padding:12px 0; border-top:1px solid #F3F4F6; margin-bottom:12px;
+      padding:16px 0; border-top:1px dashed #E5E7EB; margin-bottom:16px;
     }
     .fare-lbl { font-family:'Inter',sans-serif; font-size:14px; font-weight:600; color:#6B7280; }
-    .fare-val { font-family:'Outfit',sans-serif; font-size:22px; font-weight:800; color:#111827; letter-spacing:-0.5px; }
+    .fare-val { font-family:'Outfit',sans-serif; font-size:24px; font-weight:800; color:#111827; letter-spacing:-0.5px; }
     
     .actions { display:flex; gap:12px; }
     .act-btn {
-      flex:1; padding:12px 0; border-radius:14px; border:1.5px solid #E5E7EB;
-      background:#fff; font-family:'Inter',sans-serif; font-size:13px;
-      font-weight:700; color:#111827; cursor:pointer;
-      display:flex; align-items:center; justify-content:center; gap:6px; transition:all 0.2s;
+      flex:1; padding:14px 0; border-radius:16px; border:1px solid #E5E7EB; background:#ffffff;
+      font-family:'Inter',sans-serif; font-size:14px; font-weight:700; color:#374151;
+      display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.2s ease;
     }
     .act-btn:active { background:#F9FAFB; transform:scale(0.98); }
-    .act-btn.danger { background:#FEF2F2; border-color:#FECACA; color:#DC2626; }
+    .act-btn.danger { color:#EF4444; background:#FEF2F2; border-color:#FECACA; }
     .act-btn.danger:active { background:#FEE2E2; }
   `]
 })

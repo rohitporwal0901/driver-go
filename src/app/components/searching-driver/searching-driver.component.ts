@@ -20,10 +20,14 @@ import { MockDataService } from '../../services/mock-data.service';
       <div class="search-sheet">
         <div class="sheet-handle"></div>
         <div class="anim-section">
-          <h3>Searching for driver</h3>
-          <p>Please wait while we find you the best driver<br/>nearby.</p>
-          <div class="graphic-container">
-            <img [src]="'/assets/cars/city_car_front_graphic.png'" alt="City Skyline with Car" class="city-car-img" />
+          <h3>{{ statusMsg }}</h3>
+          <p>Sending to 3 nearby drivers...</p>
+          <div class="radar-box">
+             <div class="radar"></div>
+             <div class="radar-dot" style="top: 20%; left: 30%;"></div>
+             <div class="radar-dot" style="top: 70%; left: 80%; animation-delay: 1s;"></div>
+             <div class="radar-dot" style="top: 50%; left: 20%; animation-delay: 1.5s;"></div>
+             <img [src]="'/assets/cars/city_car_front_graphic.png'" alt="Car" class="center-car-img" />
           </div>
         </div>
         <button class="btn-cancel" id="cancel-btn" (click)="cancel()">Cancel</button>
@@ -41,10 +45,28 @@ import { MockDataService } from '../../services/mock-data.service';
     }
     .sheet-handle { width:36px; height:4px; background:#E5E7EB; border-radius:4px; margin:0 auto 16px; flex-shrink:0; }
     .anim-section { display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding-top:10px; }
-    h3 { font-family:'Outfit',sans-serif; font-size:18px; font-weight:700; color:#111827; margin:0 0 8px; }
+    h3 { font-family:'Outfit',sans-serif; font-size:18px; font-weight:700; color:#111827; margin:0 0 8px; text-align:center; min-height: 24px; }
     p { font-family:'Inter',sans-serif; font-size:13px; color:#6B7280; margin:0; text-align:center; line-height:1.4; }
-    .graphic-container { margin-top: auto; margin-bottom: 20px; width: 100%; display: flex; justify-content: center; }
-    .city-car-img { width: 100%; max-width: 260px; object-fit: contain; }
+    
+    .radar-box { position: relative; width: 140px; height: 140px; margin: 30px auto 40px; display: flex; align-items: center; justify-content: center; }
+    .radar {
+      position: absolute; width: 100%; height: 100%; border-radius: 50%;
+      background: rgba(255, 184, 0, 0.1); border: 2px solid rgba(255, 184, 0, 0.3);
+      animation: pulse 1.8s infinite cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .center-car { font-size: 40px; z-index: 2; }
+    .center-car-img { width: 60px; height: auto; z-index: 2; }
+    .radar-dot {
+      position: absolute; width: 10px; height: 10px; border-radius: 50%;
+      background: #10B981; box-shadow: 0 0 8px #10B981;
+      animation: blink 2s infinite; opacity: 0;
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(255, 184, 0, 0.4); }
+      70% { transform: scale(1.6); box-shadow: 0 0 0 40px rgba(255, 184, 0, 0); }
+      100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(255, 184, 0, 0); }
+    }
+    @keyframes blink { 0%, 100% { opacity: 0; transform: scale(0.5); } 50% { opacity: 1; transform: scale(1.2); } }
     .btn-cancel {
       width:100%; padding:14px; background:#fff; border:1px solid #E5E7EB;
       border-radius:12px; font-family:'Outfit',sans-serif; font-size:15px;
@@ -56,12 +78,12 @@ import { MockDataService } from '../../services/mock-data.service';
 export class SearchingDriverComponent implements AfterViewInit, OnDestroy {
   progress = 0;
   driverEmoji = '🚗';
-  statusMsg = 'Sending request to driver...';
+  statusMsg = 'Searching for drivers...';
   private statusMsgs = [
-    'Sending request to driver...',
-    'Driver reviewing your trip...',
-    'Driver accepted! Confirming...',
-    'Booking confirmed! 🎉',
+    'Searching for drivers...',
+    'Contacting 3 nearby drivers...',
+    'Waiting for driver confirmation...',
+    'Driver found! Confirming details...',
   ];
   private progInterval?: ReturnType<typeof setInterval>;
   private msgTimeout?: ReturnType<typeof setTimeout>;

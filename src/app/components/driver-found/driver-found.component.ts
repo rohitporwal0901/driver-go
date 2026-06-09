@@ -27,7 +27,7 @@ import { Driver } from '../../models/ride.models';
               <span class="rating">⭐ {{ driver?.rating || '4.8' }}</span>
             </div>
             <div class="drv-sub">{{ driver?.experience || '5 years' }} experience</div>
-            <div class="drv-sub">{{ driver?.licenseNo || 'ABC 1234' }}</div>
+            <div class="drv-badge">{{ driver?.licenseNo || 'MH 01 AB 1234' }}</div>
           </div>
         </div>
 
@@ -38,13 +38,13 @@ import { Driver } from '../../models/ride.models';
             <div class="loc-icon green">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
             </div>
-            <div class="loc-text">{{ pickupName }}</div>
+            <div class="loc-text" [title]="pickupName">{{ pickupName }}</div>
           </div>
           <div class="loc-row">
             <div class="loc-icon red">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
             </div>
-            <div class="loc-text">{{ dropName }}</div>
+            <div class="loc-text" [title]="dropName">{{ dropName }}</div>
           </div>
         </div>
 
@@ -77,13 +77,13 @@ import { Driver } from '../../models/ride.models';
     </div>
   `,
   styles: [`
-    .found-screen { width:100%; height:100dvh; display:flex; flex-direction:column; }
-    .map-box { height:45vh; }
+    .found-screen { width:100%; height:100dvh; display:flex; flex-direction:column; overflow: hidden; }
+    .map-box { height:45dvh; min-height: 300px; padding-top: var(--safe-top, 0px); box-sizing: border-box; }
     .leaflet-map { width:100%; height:100%; }
     .found-sheet {
       flex:1; background:#fff; border-radius:24px 24px 0 0;
-      padding:24px 24px 32px; overflow-y:auto;
-      box-shadow:0 -4px 24px rgba(0,0,0,0.06);
+      padding:24px 24px max(32px, env(safe-area-inset-bottom)); overflow-y:auto;
+      box-shadow:0 -8px 30px rgba(0,0,0,0.06); z-index: 10;
     }
     .sheet-handle { width:32px; height:4px; background:#E5E7EB; border-radius:4px; margin:0 auto 24px; }
     
@@ -94,11 +94,16 @@ import { Driver } from '../../models/ride.models';
       width:56px; height:56px; background:#F3F4F6; border-radius:50%;
       display:flex; align-items:center; justify-content:center; font-size:32px; flex-shrink:0;
     }
-    .drv-info { flex:1; display:flex; flex-direction:column; gap:4px; }
+    .drv-info { flex:1; display:flex; flex-direction:column; gap:4px; min-width: 0; }
     .drv-top { display:flex; align-items:center; justify-content:space-between; }
-    .drv-top strong { font-family:'Inter',sans-serif; font-size:16px; font-weight:700; color:#111827; }
-    .rating { font-family:'Inter',sans-serif; font-size:14px; font-weight:600; color:#374151; }
+    .drv-top strong { font-family:'Inter',sans-serif; font-size:16px; font-weight:700; color:#111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .rating { font-family:'Inter',sans-serif; font-size:13px; font-weight:600; color:#374151; flex-shrink: 0; margin-left: 8px; }
     .drv-sub { font-family:'Inter',sans-serif; font-size:13px; color:#6B7280; font-weight:500; }
+    .drv-badge { 
+      display: inline-block; padding: 2px 8px; border-radius: 4px; background: #F3F4F6;
+      border: 1px solid #E5E7EB; font-family: 'Inter', sans-serif; font-size: 11px;
+      font-weight: 700; color: #374151; letter-spacing: 0.5px; width: max-content;
+    }
     
     .loc-section {
       position:relative; padding-left:4px; margin-bottom:24px;
@@ -111,7 +116,7 @@ import { Driver } from '../../models/ride.models';
       position:absolute; left:11px; top:24px; bottom:24px; width:0px;
       border-left:2px dotted #D1D5DB; z-index:1;
     }
-    .loc-text { font-family:'Inter',sans-serif; font-size:14px; color:#374151; font-weight:500; }
+    .loc-text { flex: 1; font-family:'Inter',sans-serif; font-size:14px; color:#374151; font-weight:500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     
     .fare-row {
       display:flex; justify-content:space-between; align-items:center;
@@ -123,18 +128,19 @@ import { Driver } from '../../models/ride.models';
     .action-row { display:flex; gap:12px; margin-bottom:24px; }
     .act-btn {
       flex:1; display:flex; align-items:center; justify-content:center; gap:6px;
-      padding:12px 0; border-radius:24px; border:1px solid #E5E7EB; background:#fff;
-      font-family:'Inter',sans-serif; font-size:13px; font-weight:700; color:#111827; cursor:pointer;
+      padding:14px 0; border-radius:16px; border:1px solid #E5E7EB; background:#ffffff;
+      font-family:'Inter',sans-serif; font-size:14px; font-weight:700; color:#374151; cursor:pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.2s ease;
     }
     .act-btn:active { background:#F9FAFB; transform:scale(0.98); }
     
     .btn-start {
       width:100%; padding:18px; background:#F59E0B;
-      border:none; border-radius:14px; font-family:'Outfit',sans-serif;
-      font-size:18px; font-weight:800; color:#fff; cursor:pointer;
-      transition:all 0.2s;
+      border:none; border-radius:16px; font-family:'Outfit',sans-serif;
+      font-size:18px; font-weight:800; color:#ffffff; cursor:pointer;
+      box-shadow: 0 4px 12px rgba(245,158,11,0.3); transition:all 0.2s ease;
     }
-    .btn-start:active{ transform:scale(0.98); }
+    .btn-start:active{ transform:scale(0.98); background:#D97706; box-shadow:none; }
   `]
 })
 export class DriverFoundComponent implements AfterViewInit, OnDestroy {

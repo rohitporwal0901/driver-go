@@ -57,5 +57,10 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./components/ride-completed/ride-completed.component').then(m => m.RideCompletedComponent),
   },
+  {
+    path: 'notifications',
+    loadComponent: () =>
+      import('./components/notifications/notifications.component').then(m => m.NotificationsComponent),
+  },
   { path: '**', redirectTo: 'splash' },
 ];

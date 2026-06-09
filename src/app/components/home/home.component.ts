@@ -24,10 +24,13 @@ import * as L from 'leaflet';
           </button>
           <div class="greeting">
             <h1>Namaste, Rohit 👋</h1>
-            <p>Aaj kahan jaana hai?</p>
+            <p *ngIf="!loadingLocation">Aaj kahan jaana hai?</p>
+            <p *ngIf="loadingLocation" class="gps-loading">
+               <span class="spinner"></span> Finding location...
+            </p>
           </div>
         </div>
-        <button class="notif-btn" id="notif-btn">
+        <button class="notif-btn" id="notif-btn" (click)="goToNotifications()">
           <span>🔔</span>
           <div class="badge">2</div>
         </button>
@@ -148,21 +151,25 @@ import * as L from 'leaflet';
   styles: [`
     .home { width:100%; height:100dvh; display:flex; flex-direction:column; position:relative; overflow:hidden; }
     .header {
-      position:absolute; top:0; left:0; right:0; z-index:20;
-      padding:44px 16px 12px;
-      background:linear-gradient(180deg,rgba(255,255,255,0.98) 70%,transparent);
+      position:absolute; top:calc(16px + env(safe-area-inset-top, 0px)); left:16px; right:16px; z-index:2000;
+      padding:16px; border-radius:16px;
+      background: #ffffff;
       display:flex; align-items:center; justify-content:space-between;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
     }
-    .header-left { display:flex; align-items:center; gap:10px; }
+    .header-left { display:flex; align-items:center; gap:12px; }
     .menu-btn {
-      background:#fff; border:1px solid #E5E7EB; border-radius:12px;
+      background:#F9FAFB; border:1px solid #E5E7EB; border-radius:12px;
       width:42px; height:42px; display:flex; flex-direction:column;
       align-items:center; justify-content:center; gap:5px; cursor:pointer;
-      box-shadow:0 2px 8px rgba(0,0,0,0.06);
+      box-shadow:0 2px 4px rgba(0,0,0,0.02);
     }
     .menu-btn span { display:block; width:18px; height:2px; background:#374151; border-radius:2px; }
     .greeting h1 { font-family:'Outfit',sans-serif; font-size:18px; font-weight:700; color:#111827; margin:0; }
-    .greeting p { font-family:'Inter',sans-serif; font-size:12px; color:#9CA3AF; margin:0; }
+    .greeting p { font-family:'Inter',sans-serif; font-size:12px; color:#9CA3AF; margin:0; display:flex; align-items:center; gap:6px;}
+    .gps-loading { color: #D97706 !important; font-weight: 500; }
+    .spinner { width:12px; height:12px; border:2px solid #FDE68A; border-top-color:#D97706; border-radius:50%; animation:spin 1s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
     .notif-btn {
       background:#fff; border:1px solid #E5E7EB; border-radius:12px;
       width:42px; height:42px; display:flex; align-items:center; justify-content:center;
@@ -174,7 +181,7 @@ import * as L from 'leaflet';
       font-family:'Inter',sans-serif; font-size:9px; font-weight:700; color:#fff;
       display:flex; align-items:center; justify-content:center;
     }
-    .map-box { height:50vh; position:relative; }
+    .map-box { height:45dvh; min-height: 300px; position:relative; }
     .leaflet-map { width:100%; height:100%; }
     .map-gradient {
       position:absolute; bottom:0; left:0; right:0; height:80px;
@@ -195,25 +202,26 @@ import * as L from 'leaflet';
     .trip-inputs:active { border-color:#FFB800; }
     
     .trip-connector {
-      position: absolute; top: 34px; bottom: 34px; left: 26px; width: 1px; background: #E5E7EB; z-index: 1;
+      position: absolute; top: 34px; bottom: 34px; left: 14px; width: 1px; background: #E5E7EB; z-index: 1;
     }
     .swap-btn {
-      position: absolute; left: 16px; top: 50%; transform: translateY(-50%); z-index: 3;
-      background: #FFF3CD; border: none; border-radius: 6px; width: 22px; height: 22px;
+      position: absolute; left: 0px; top: 50%; transform: translateY(-50%); z-index: 3;
+      background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 50%; width: 28px; height: 28px;
       display: flex; align-items: center; justify-content: center;
       font-size: 14px; cursor: pointer; color: #D97706; font-weight: bold;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 
-    .input-row { display:flex; align-items:center; gap:16px; position: relative; z-index: 2; }
+    .input-row { display:flex; align-items:center; gap:12px; position: relative; z-index: 2; margin-left: 18px; }
     .input-row.from { margin-bottom: 24px; }
     
     .dot { width:14px; height:14px; border-radius:50%; flex-shrink:0; box-sizing: border-box; }
-    .green-dot { background:#22C55E; border: 3px solid #BBF7D0; }
-    .red-dot { background:#EF4444; border: 3px solid #FECACA; }
+    .green-dot { background:#22C55E; border: 3px solid #BBF7D0; margin-left: -7px; }
+    .red-dot { background:#EF4444; border: 3px solid #FECACA; margin-left: -7px; }
     
-    .input-fake { flex:1; display: flex; flex-direction: column; gap: 2px; }
+    .input-fake { flex:1; display: flex; flex-direction: column; gap: 2px; overflow:hidden; }
     .input-fake small { font-family:'Inter',sans-serif; font-size:10px; color:#9CA3AF; text-transform:uppercase; font-weight:600; letter-spacing:0.5px; }
-    .input-fake span { font-family:'Inter',sans-serif; font-size:15px; font-weight:500; color:#374151; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; max-width:280px; }
+    .input-fake span { font-family:'Inter',sans-serif; font-size:15px; font-weight:500; color:#374151; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; width:100%; }
     .input-fake .placeholder { color:#9CA3AF; }
 
     .section-title {
@@ -261,13 +269,13 @@ import * as L from 'leaflet';
     
     .btn-find {
       width:100%; padding:18px; 
-      background:#FCD34D; /* Light warm yellow from the image */
+      background:#F59E0B; /* Amber-500, much more visible */
       border:none; border-radius:14px; font-family:'Outfit',sans-serif;
       font-size:18px; font-weight:800; color:#ffffff; cursor:pointer;
       text-shadow: 0 1px 2px rgba(0,0,0,0.1);
       transition:all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
     }
-    .btn-find:disabled { background: #FDE68A; color: rgba(255,255,255,0.8); cursor:not-allowed; }
+    .btn-find:disabled { background: #FCD34D; color: rgba(255,255,255,0.8); cursor:not-allowed; }
     .btn-find:not(:disabled):active { transform:scale(0.98); }
 
     /* Overlay */
@@ -278,7 +286,7 @@ import * as L from 'leaflet';
     }
     .loc-sheet {
       width:100%; background:#fff; border-radius:24px 24px 0 0;
-      padding:16px 20px 48px; max-height:82vh; overflow-y:auto;
+      padding:16px 20px max(48px, env(safe-area-inset-bottom)); max-height:82dvh; overflow-y:auto;
       animation:slideUp 0.35s cubic-bezier(0.34,1.56,0.64,1);
     }
     @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
@@ -355,6 +363,10 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   ) {}
 
   ngOnInit() {
+    this.carTypes = this.mockData.CAR_TYPES;
+    this.selectedCar = this.carTypes[1]; // default Sedan
+    this.rideState.setCarType(this.selectedCar);
+
     this.searchSubject.pipe(
       debounceTime(500),
       distinctUntilChanged((prev, curr) => prev.query === curr.query)
@@ -364,9 +376,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    this.carTypes = this.mockData.CAR_TYPES;
-    this.selectedCar = this.carTypes[1]; // default Sedan
-    this.rideState.setCarType(this.selectedCar);
 
     setTimeout(async () => {
       const map = this.mapSvc.createMap('home-map', [22.95, 75.82], 8);
@@ -409,6 +418,14 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.mapSvc.removeMap('home-map'); 
   }
 
+  cancelSearch() {
+    this.showSearch = false;
+  }
+
+  goToNotifications() {
+    this.router.navigate(['/notifications']);
+  }
+
   openSearch(): void {
     this.showSearch = true;
     this.suggestions = this.mockData.POPULAR_CITIES.slice(0, 8); // Show default cities initially
@@ -426,8 +443,34 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async fetchPlaces(query: string) {
-    // Using 30 default Indian cities for fast local search as requested
-    this.suggestions = this.mockData.filterCities(query);
+    if (!query || query.length < 2) {
+      this.suggestions = this.mockData.filterCities(query);
+      return;
+    }
+    
+    // 1. Get local suggestions
+    const local = this.mockData.filterCities(query);
+    
+    // 2. Fetch remote from Nominatim for real places
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=5`;
+      const res = await fetch(url);
+      const data = await res.json();
+      
+      const remote = data.map((item: any) => ({
+        lat: parseFloat(item.lat),
+        lng: parseFloat(item.lon),
+        name: item.display_name.split(',')[0],
+        address: item.display_name
+      }));
+      
+      // Filter out remote duplicates that have the same name as local
+      const remoteFiltered = remote.filter((r: any) => !local.find(l => (l.name || '').toLowerCase() === (r.name || '').toLowerCase()));
+      
+      this.suggestions = [...local, ...remoteFiltered].slice(0, 8);
+    } catch (e) {
+      this.suggestions = local;
+    }
   }
 
   async pickCity(loc: any): Promise<void> {
