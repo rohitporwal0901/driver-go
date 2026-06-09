@@ -144,6 +144,7 @@ import { Driver } from '../../models/ride.models';
     .prog-car {
       position:absolute; right:-12px; top:-10px;
       font-size:22px; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+      transform: scaleX(-1);
     }
     .prog-places { display:flex; justify-content:space-between; }
     .prog-places span { font-family:'Inter',sans-serif; font-size:11px; font-weight:600; color:#9CA3AF; }

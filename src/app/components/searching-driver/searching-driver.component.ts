@@ -31,16 +31,16 @@ import { MockDataService } from '../../services/mock-data.service';
     </div>
   `,
   styles: [`
-    .search-screen { width:100%; height:100dvh; display:flex; flex-direction:column; }
-    .map-box { height:55vh; position:relative; }
+    .search-screen { width:100%; height:100vh; height:100dvh; display:flex; flex-direction:column; background-color:#fff; }
+    .map-box { flex:1; position:relative; }
     .leaflet-map { width:100%; height:100%; }
     .search-sheet {
-      flex:1; background:#fff; border-radius:24px 24px 0 0;
+      background:#fff; border-radius:24px 24px 0 0;
       padding:12px 24px 24px; display:flex; flex-direction:column;
       box-shadow:0 -4px 24px rgba(0,0,0,0.08); z-index: 1000;
     }
-    .sheet-handle { width:36px; height:4px; background:#E5E7EB; border-radius:4px; margin:0 auto 16px; }
-    .anim-section { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding-top:10px; }
+    .sheet-handle { width:36px; height:4px; background:#E5E7EB; border-radius:4px; margin:0 auto 16px; flex-shrink:0; }
+    .anim-section { display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding-top:10px; }
     h3 { font-family:'Outfit',sans-serif; font-size:18px; font-weight:700; color:#111827; margin:0 0 8px; }
     p { font-family:'Inter',sans-serif; font-size:13px; color:#6B7280; margin:0; text-align:center; line-height:1.4; }
     .graphic-container { margin-top: auto; margin-bottom: 20px; width: 100%; display: flex; justify-content: center; }
