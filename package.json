@@ -8,7 +8,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "build:android": "ng build && npx cap sync android",
-    "open:android": "npx cap open android",
+    "open:android": "CAPACITOR_ANDROID_STUDIO_PATH=/snap/android-studio/current/bin/studio.sh npx cap open android",
     "build:apk": "ng build && npx cap sync android && cd android && ./gradlew assembleDebug"
   },
   "private": true,
