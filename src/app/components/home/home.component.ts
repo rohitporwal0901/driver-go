@@ -83,6 +83,17 @@ import * as L from 'leaflet';
           </button>
         </div>
 
+        <!-- Transmission Selection -->
+        <div class="section-title">Transmission</div>
+        <div class="transmission-options">
+          <button class="trans-btn" [class.active]="transmission === 'manual'" (click)="transmission = 'manual'">
+            ⚙️ Manual
+          </button>
+          <button class="trans-btn" [class.active]="transmission === 'auto'" (click)="transmission = 'auto'">
+            🔄 Automatic
+          </button>
+        </div>
+
         <!-- Popular Routes -->
         <div class="section-title">Popular Routes</div>
         <div class="routes-scroll">
@@ -252,6 +263,14 @@ import * as L from 'leaflet';
     .car-price { font-family:'Inter',sans-serif; font-size:12px; font-weight:600; color:#111827; margin-top: 2px; }
     .car-price-placeholder { font-family:'Inter',sans-serif; font-size:12px; color:#9CA3AF; margin-top: 2px; }
     
+    .transmission-options { display: flex; gap: 12px; margin-bottom: 24px; }
+    .trans-btn {
+      flex: 1; padding: 12px; background: #ffffff; border: 1.5px solid #E5E7EB; border-radius: 12px;
+      font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: #374151;
+      cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .trans-btn.active { border-color: #F59E0B; background: #FFFBEB; color: #D97706; }
+
     .routes-scroll {
       display:flex; gap:10px; overflow-x:auto; margin-bottom:28px;
       padding-bottom:4px; scrollbar-width: none;
@@ -338,6 +357,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   suggestions: any[] = [];
   selectedCar?: CarType;
   carTypes: CarType[] = [];
+  transmission: 'manual' | 'auto' = 'manual';
   
   distance: number | null = null;
   fare: number | null = null;
