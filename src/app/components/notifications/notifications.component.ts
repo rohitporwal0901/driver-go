@@ -36,34 +36,34 @@ import { Router } from '@angular/router';
   styles: [`
     .notifications-screen {
       width: 100%; height: 100dvh; display: flex; flex-direction: column;
-      background: #FAFAFA; overflow: hidden;
+      background: var(--bg-color); overflow: hidden;
     }
     .header {
-      padding: calc(16px + env(safe-area-inset-top, 0px)) 16px 16px;
-      background: #ffffff; display: flex; align-items: center; gap: 16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04); z-index: 10;
+      padding: calc(16px + var(--safe-top)) 16px 16px;
+      background: var(--surface); display: flex; align-items: center; gap: 16px;
+      box-shadow: var(--shadow-sm); z-index: 10;
     }
     .back-btn {
-      width: 40px; height: 40px; background: #F9FAFB; border: 1px solid #E5E7EB;
-      border-radius: 12px; display: flex; align-items: center; justify-content: center;
-      cursor: pointer; flex-shrink: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+      width: 40px; height: 40px; background: var(--bg-color); border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center;
+      cursor: pointer; flex-shrink: 0; box-shadow: var(--shadow-sm);
     }
     .header h1 {
       font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 800;
-      color: #111827; margin: 0;
+      color: var(--text-primary); margin: 0;
     }
     .notif-list {
       flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;
     }
     .notif-card {
-      background: #ffffff; border-radius: 16px; padding: 16px;
+      background: var(--surface); border-radius: var(--radius-md); padding: 16px;
       display: flex; align-items: flex-start; gap: 16px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid #F3F4F6;
+      box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);
       position: relative;
     }
     .notif-card.unread::after {
       content: ''; position: absolute; top: 16px; right: 16px;
-      width: 8px; height: 8px; background: #EF4444; border-radius: 50%;
+      width: 8px; height: 8px; background: var(--error); border-radius: 50%;
     }
     .notif-icon-wrap {
       width: 48px; height: 48px; border-radius: 50%; display: flex;
@@ -71,19 +71,19 @@ import { Router } from '@angular/router';
     }
     .notif-icon-wrap.offer { background: #FEF3C7; color: #D97706; }
     .notif-icon-wrap.ride { background: #DBEAFE; color: #2563EB; }
-    .notif-icon-wrap.system { background: #F3F4F6; color: #4B5563; }
+    .notif-icon-wrap.system { background: var(--bg-color); color: var(--text-secondary); }
     
     .notif-content { flex: 1; min-width: 0; padding-right: 12px; }
     .notif-content strong {
       display: block; font-family: 'Outfit', sans-serif; font-size: 16px;
-      font-weight: 700; color: #111827; margin-bottom: 4px;
+      font-weight: 700; color: var(--text-primary); margin-bottom: 4px;
     }
     .notif-content p {
-      font-family: 'Inter', sans-serif; font-size: 13px; color: #6B7280;
+      font-family: 'Inter', sans-serif; font-size: 13px; color: var(--text-secondary);
       line-height: 1.4; margin: 0 0 8px;
     }
     .notif-time {
-      font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; color: #9CA3AF;
+      font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; color: var(--text-tertiary);
     }
   `]
 })

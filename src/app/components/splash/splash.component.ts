@@ -107,7 +107,7 @@ import { CommonModule } from '@angular/common';
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 16px;
+      gap: var(--spacing-2);
     }
     .logo-pin {
       position: relative;
@@ -117,7 +117,7 @@ import { CommonModule } from '@angular/common';
       height: 90px;
       border-radius: 50% 50% 50% 0;
       transform: rotate(-45deg);
-      background: linear-gradient(135deg, #FFB800, #FFDB4D);
+      background: linear-gradient(135deg, var(--primary), #FFDB4D);
       box-shadow: 0 0 50px rgba(255, 184, 0, 0.6), 0 0 100px rgba(255, 184, 0, 0.2);
       display: flex;
       align-items: center;
@@ -127,7 +127,7 @@ import { CommonModule } from '@angular/common';
     .pin-inner {
       width: 64px;
       height: 64px;
-      background: linear-gradient(135deg, #FFB800, #FF8C00);
+      background: var(--primary-gradient);
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -161,7 +161,7 @@ import { CommonModule } from '@angular/common';
     /* Bottom loader */
     .bottom-section {
       position: absolute;
-      bottom: 52px;
+      bottom: max(52px, var(--safe-bottom));
       left: 0;
       right: 0;
       z-index: 2;
@@ -185,7 +185,7 @@ import { CommonModule } from '@angular/common';
     }
     .progress-fill {
       height: 100%;
-      background: linear-gradient(90deg, #FFB800, #FFDB4D);
+      background: linear-gradient(90deg, var(--primary), #FFDB4D);
       border-radius: 3px;
       animation: load 2.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
     }

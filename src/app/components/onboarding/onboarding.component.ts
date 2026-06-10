@@ -73,7 +73,7 @@ interface Slide {
     .onboard {
       width: 100%;
       height: 100dvh;
-      background: #ffffff;
+      background: var(--surface);
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -129,7 +129,7 @@ interface Slide {
       left: 0;
       right: 0;
       height: 40px;
-      background: #ffffff;
+      background: var(--surface);
       border-radius: 100% 100% 0 0 / 40px 40px 0 0;
     }
     .emoji-art {
@@ -142,7 +142,7 @@ interface Slide {
     .emoji-circle {
       width: 140px;
       height: 140px;
-      background: linear-gradient(135deg, #FFB800, #FF8C00);
+      background: var(--primary-gradient);
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -159,24 +159,24 @@ interface Slide {
     /* ---- Text Section ---- */
     .text-section {
       flex: 1;
-      padding: 28px 28px 0;
+      padding: var(--spacing-4) var(--spacing-4) 0;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: var(--spacing-1);
     }
     h2 {
       font-family: 'Outfit', sans-serif;
       font-size: 30px;
       font-weight: 800;
-      color: #111827;
+      color: var(--text-primary);
       line-height: 1.2;
       margin: 0;
     }
-    .hl { color: #FFB800; }
+    .hl { color: var(--primary); }
     p {
       font-family: 'Inter', sans-serif;
       font-size: 15px;
-      color: #6B7280;
+      color: var(--text-secondary);
       line-height: 1.65;
       margin: 0;
     }
@@ -192,28 +192,30 @@ interface Slide {
       width: 8px;
       height: 8px;
       border-radius: 4px;
-      background: #E5E7EB;
+      background: var(--border-color);
       cursor: pointer;
       transition: all 0.3s ease;
     }
     .dots span.active {
       width: 28px;
-      background: linear-gradient(90deg, #FFB800, #FF8C00);
+      background: var(--primary-gradient);
     }
 
     /* ---- Actions ---- */
     .actions {
-      padding: 14px 24px 48px;
+      padding: var(--spacing-2) var(--spacing-3) max(36px, var(--safe-bottom));
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: var(--spacing-1);
     }
+    /* We can remove .btn-next if we switch to .btn-primary in HTML, but changing CSS is safer here to avoid HTML changes as per user request to not change structure drastically */
     .btn-next {
       width: 100%;
-      padding: 18px;
-      background: linear-gradient(135deg, #FFB800, #FF8C00);
+      padding: 16px;
+      height: 56px;
+      background: var(--primary-gradient);
       border: none;
-      border-radius: 18px;
+      border-radius: var(--radius-md);
       font-family: 'Outfit', sans-serif;
       font-size: 18px;
       font-weight: 700;
@@ -229,12 +231,12 @@ interface Slide {
       border: none;
       font-family: 'Inter', sans-serif;
       font-size: 15px;
-      color: #9CA3AF;
+      color: var(--text-tertiary);
       cursor: pointer;
-      padding: 4px;
+      padding: 8px;
       transition: color 0.2s;
     }
-    .btn-skip:hover { color: #6B7280; }
+    .btn-skip:hover { color: var(--text-secondary); }
   `]
 })
 export class OnboardingComponent {

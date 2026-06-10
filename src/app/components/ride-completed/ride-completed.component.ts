@@ -88,7 +88,7 @@ import { RideStateService } from '../../services/ride-state.service';
   styles: [`
     .completed {
       width:100%; height:100dvh;
-      background:linear-gradient(180deg,#FFFBEB 0%,#fff 35%);
+      background:linear-gradient(180deg,#FFFBEB 0%,var(--bg-color) 35%);
       display:flex; flex-direction:column; overflow-y:auto;
     }
     .success-section {
@@ -96,7 +96,7 @@ import { RideStateService } from '../../services/ride-state.service';
       position:relative;
     }
     .success-circle {
-      width:90px; height:90px; background:#22C55E; border-radius:50%;
+      width:90px; height:90px; background:var(--success); border-radius:50%;
       display:flex; align-items:center; justify-content:center;
       font-size:42px; color:#fff; font-weight:700; position:relative; z-index:3;
       transform:scale(0); transition:transform 0.7s cubic-bezier(0.34,1.56,0.64,1);
@@ -111,67 +111,67 @@ import { RideStateService } from '../../services/ride-state.service';
     .r2 { width:160px; height:160px; animation-delay:0.5s; }
     .r3 { width:200px; height:200px; animation-delay:0.8s; }
     @keyframes ringOut { 0%{transform:scale(0.8);opacity:0.8} 100%{transform:scale(1.4);opacity:0} }
-    .content { padding:4px 20px 48px; }
-    h2 { font-family:'Outfit',sans-serif; font-size:28px; font-weight:800; color:#111827; margin:0 0 6px; text-align:center; }
-    .sub { font-family:'Inter',sans-serif; font-size:14px; color:#6B7280; text-align:center; margin:0 0 16px; }
+    .content { padding:var(--spacing-1) 20px 48px; }
+    h2 { font-family:'Outfit',sans-serif; font-size:28px; font-weight:800; color:var(--text-primary); margin:0 0 6px; text-align:center; }
+    .sub { font-family:'Inter',sans-serif; font-size:14px; color:var(--text-secondary); text-align:center; margin:0 0 16px; }
     .route-recap {
       display:flex; align-items:center; justify-content:center; gap:8px;
-      background:#F9FAFB; border-radius:14px; padding:12px 16px; margin-bottom:14px;
-      border:1px solid #F3F4F6;
+      background:var(--bg-color); border-radius:var(--radius-md); padding:12px 16px; margin-bottom:14px;
+      border:1px solid var(--border-color);
     }
     .recap-city { display:flex; align-items:center; gap:6px; }
     .city-dot { width:10px; height:10px; border-radius:50%; }
-    .green { background:#22C55E; }
-    .red { background:#EF4444; }
-    .recap-city span { font-family:'Outfit',sans-serif; font-size:15px; font-weight:700; color:#111827; }
-    .recap-arrow { font-family:'Inter',sans-serif; font-size:12px; color:#9CA3AF; }
+    .green { background:var(--success); }
+    .red { background:var(--error); }
+    .recap-city span { font-family:'Outfit',sans-serif; font-size:15px; font-weight:700; color:var(--text-primary); }
+    .recap-arrow { font-family:'Inter',sans-serif; font-size:12px; color:var(--text-tertiary); }
     .summary-card {
-      background:#fff; border-radius:18px; padding:16px 18px; margin-bottom:14px;
-      box-shadow:0 2px 16px rgba(0,0,0,0.06); border:1px solid #F3F4F6;
+      background:var(--surface); border-radius:var(--radius-lg); padding:16px 18px; margin-bottom:14px;
+      box-shadow:var(--shadow-sm); border:1px solid var(--border-color);
     }
     .sum-row { display:flex; justify-content:space-between; align-items:center; padding:5px 0; }
-    .sum-row > span:first-child { font-family:'Inter',sans-serif; font-size:13px; color:#9CA3AF; }
-    .sum-val { font-family:'Inter',sans-serif; font-size:13px; font-weight:600; color:#374151; }
-    .sum-divider { height:1px; background:#F3F4F6; margin:8px 0; }
-    .fare-label { font-family:'Outfit',sans-serif; font-size:15px; font-weight:700; color:#111827; }
+    .sum-row > span:first-child { font-family:'Inter',sans-serif; font-size:13px; color:var(--text-tertiary); }
+    .sum-val { font-family:'Inter',sans-serif; font-size:13px; font-weight:600; color:var(--text-primary); }
+    .sum-divider { height:1px; background:var(--border-color); margin:8px 0; }
+    .fare-label { font-family:'Outfit',sans-serif; font-size:15px; font-weight:700; color:var(--text-primary); }
     .fare-val { font-family:'Outfit',sans-serif; font-size:24px; font-weight:800; color:#D97706; }
     .rate-card {
-      background:#fff; border-radius:18px; padding:16px 18px; margin-bottom:14px;
-      box-shadow:0 2px 16px rgba(0,0,0,0.06); border:1px solid #F3F4F6;
+      background:var(--surface); border-radius:var(--radius-lg); padding:16px 18px; margin-bottom:14px;
+      box-shadow:var(--shadow-sm); border:1px solid var(--border-color);
     }
     .rate-header { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
     .rate-avatar {
       width:48px; height:48px; background:#FFF3CD; border-radius:50%;
       display:flex; align-items:center; justify-content:center; font-size:26px;
-      border:2px solid #FFB800; flex-shrink:0;
+      border:2px solid var(--primary); flex-shrink:0;
     }
-    .rate-header h4 { font-family:'Outfit',sans-serif; font-size:16px; font-weight:700; color:#111827; margin:0; }
-    .rate-header p { font-family:'Inter',sans-serif; font-size:12px; color:#9CA3AF; margin:0; }
+    .rate-header h4 { font-family:'Outfit',sans-serif; font-size:16px; font-weight:700; color:var(--text-primary); margin:0; }
+    .rate-header p { font-family:'Inter',sans-serif; font-size:12px; color:var(--text-secondary); margin:0; }
     .stars { display:flex; gap:6px; justify-content:center; margin-bottom:14px; }
-    .star { background:none; border:none; font-size:38px; color:#E5E7EB; cursor:pointer; transition:all 0.15s; }
-    .star.lit { color:#FFB800; }
+    .star { background:none; border:none; font-size:38px; color:var(--border-color); cursor:pointer; transition:all 0.15s; }
+    .star.lit { color:var(--primary); }
     .star:hover { transform:scale(1.2); }
     .review-area {
-      width:100%; border:1.5px solid #E5E7EB; border-radius:12px;
-      padding:10px 12px; font-family:'Inter',sans-serif; font-size:14px; color:#374151;
-      resize:none; outline:none; transition:border 0.2s; box-sizing:border-box;
+      width:100%; border:1.5px solid var(--border-color); border-radius:var(--radius-sm);
+      padding:10px 12px; font-family:'Inter',sans-serif; font-size:14px; color:var(--text-primary);
+      resize:none; outline:none; transition:border 0.2s; box-sizing:border-box; background: var(--bg-color);
     }
-    .review-area:focus { border-color:#FFB800; }
-    .review-area::placeholder { color:#9CA3AF; }
+    .review-area:focus { border-color:var(--primary); background: var(--surface); }
+    .review-area::placeholder { color:var(--text-tertiary); }
     .btn-submit {
-      width:100%; padding:18px; margin-bottom:10px;
-      background:linear-gradient(135deg,#FFB800,#FF8C00);
-      border:none; border-radius:16px; font-family:'Outfit',sans-serif;
+      width:100%; padding:18px; margin-bottom:10px; height: 56px;
+      background:var(--primary-gradient);
+      border:none; border-radius:var(--radius-md); font-family:'Outfit',sans-serif;
       font-size:18px; font-weight:700; color:#fff; cursor:pointer;
       box-shadow:0 8px 24px rgba(255,184,0,0.4); transition:all 0.2s;
     }
-    .btn-submit:active { transform:scale(0.97); }
+    .btn-submit:active { transform:scale(0.97); box-shadow:0 4px 12px rgba(255,184,0,0.2); }
     .btn-new {
-      width:100%; padding:14px; background:none; border:2px solid #E5E7EB;
-      border-radius:14px; font-family:'Outfit',sans-serif; font-size:16px;
-      font-weight:600; color:#374151; cursor:pointer; transition:all 0.2s;
+      width:100%; padding:14px; background:none; border:2px solid var(--border-color);
+      border-radius:var(--radius-sm); font-family:'Outfit',sans-serif; font-size:16px;
+      font-weight:600; color:var(--text-primary); cursor:pointer; transition:all 0.2s;
     }
-    .btn-new:hover { border-color:#FFB800; color:#D97706; }
+    .btn-new:hover { border-color:var(--primary); color:#D97706; }
   `]
 })
 export class RideCompletedComponent implements OnInit {

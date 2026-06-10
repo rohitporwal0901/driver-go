@@ -88,16 +88,16 @@ import { Driver } from '../../models/ride.models';
   styles: [`
     .onride-screen { width:100%; height:100dvh; display:flex; flex-direction:column; position:relative; }
     .top-bar {
-      position:absolute; top:calc(16px + env(safe-area-inset-top, 0px)); left:16px; right:16px; z-index:20;
+      position:absolute; top:calc(16px + var(--safe-top)); left:16px; right:16px; z-index:20;
       background:rgba(255,255,255,0.95); backdrop-filter:blur(8px);
-      padding:12px 16px; border-radius:16px; border:1px solid #F3F4F6;
+      padding:12px 16px; border-radius:var(--radius-md); border:1px solid var(--border-color);
       display:flex; align-items:center; justify-content:space-between;
-      box-shadow:0 4px 16px rgba(0,0,0,0.06);
+      box-shadow:var(--shadow-sm);
     }
-    .trip-label span:first-child { display:block; font-family:'Outfit',sans-serif; font-size:16px; font-weight:800; color:#111827; }
-    .elapsed { font-family:'Inter',sans-serif; font-size:12px; font-weight:500; color:#6B7280; }
+    .trip-label span:first-child { display:block; font-family:'Outfit',sans-serif; font-size:16px; font-weight:800; color:var(--text-primary); }
+    .elapsed { font-family:'Inter',sans-serif; font-size:12px; font-weight:500; color:var(--text-secondary); }
     .sos-btn {
-      background:#EF4444; color:#fff; border:none; border-radius:20px;
+      background:var(--error); color:#fff; border:none; border-radius:20px;
       padding:8px 14px; font-family:'Outfit',sans-serif; font-size:14px; font-weight:800;
       cursor:pointer; animation:sosPulse 1.5s ease-in-out infinite;
       display:flex; align-items:center; gap:4px;
@@ -108,46 +108,46 @@ import { Driver } from '../../models/ride.models';
     .leaflet-map { width:100%; height:100%; }
     
     .ride-panel {
-      background:#fff; border-radius:24px 24px 0 0;
-      padding:20px 20px max(28px, env(safe-area-inset-bottom)); box-shadow:0 -8px 30px rgba(0,0,0,0.06); z-index:5;
+      background:var(--surface); border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+      padding:20px 20px max(var(--spacing-4), var(--safe-bottom)); box-shadow:var(--shadow-sheet); z-index:5;
     }
-    .sheet-handle { width:40px; height:4px; background:#E5E7EB; border-radius:4px; margin:0 auto 16px; }
+    .sheet-handle { width:40px; height:4px; background:var(--border-color); border-radius:4px; margin:0 auto var(--spacing-2); }
     
-    .driver-row { display:flex; align-items:center; margin-bottom:20px; }
+    .driver-row { display:flex; align-items:center; margin-bottom:var(--spacing-3); }
     .drv-avatar-ring {
-      padding:3px; border-radius:50%; background:linear-gradient(135deg,#FFB800,#FF8C00);
+      padding:3px; border-radius:50%; background:var(--primary-gradient);
       margin-right:12px; display:flex; align-items:center; justify-content:center; flex-shrink: 0;
     }
     .drv-avatar {
-      width:48px; height:48px; background:#fff; border-radius:50%;
-      display:flex; align-items:center; justify-content:center; font-size:26px; border:2px solid #fff;
+      width:48px; height:48px; background:var(--surface); border-radius:50%;
+      display:flex; align-items:center; justify-content:center; font-size:26px; border:2px solid var(--surface);
     }
     .drv-info { flex:1; display:flex; flex-direction:column; min-width:0; }
-    .drv-info strong { font-family:'Outfit',sans-serif; font-size:17px; font-weight:800; color:#111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .rating { font-family:'Inter',sans-serif; font-size:13px; font-weight:600; color:#4B5563; }
+    .drv-info strong { font-family:'Outfit',sans-serif; font-size:17px; font-weight:800; color:var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .rating { font-family:'Inter',sans-serif; font-size:13px; font-weight:600; color:var(--text-secondary); }
     
     .drv-vehicle { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; margin-left: 8px; }
     .drv-plate {
-      background:#F3F4F6; border:1px solid #E5E7EB; border-radius:6px;
+      background:var(--bg-color); border:1px solid var(--border-color); border-radius:var(--radius-sm);
       padding:4px 8px; font-family:'Inter',sans-serif; font-size:13px;
-      font-weight:800; color:#111827; letter-spacing:0.5px; margin-bottom: 2px;
+      font-weight:800; color:var(--text-primary); letter-spacing:0.5px; margin-bottom: 2px;
     }
     .speed-badge {
-      background:#111827; border:1px solid #374151; border-radius:10px;
-      padding:4px 8px; font-family:'Outfit',sans-serif; font-size:13px; font-weight:800; color:#10B981;
+      background:var(--text-primary); border:1px solid var(--text-secondary); border-radius:10px;
+      padding:4px 8px; font-family:'Outfit',sans-serif; font-size:13px; font-weight:800; color:var(--success);
       margin-top:6px; display:inline-flex; align-items:center; gap:4px; box-shadow:0 4px 12px rgba(0,0,0,0.1);
     }
     
-    .trip-progress { margin-bottom:16px; }
+    .trip-progress { margin-bottom:var(--spacing-2); }
     .prog-row { display:flex; justify-content:space-between; margin-bottom:12px; }
-    .prog-label { font-family:'Inter',sans-serif; font-size:13px; font-weight:600; color:#6B7280; }
-    .prog-pct { font-family:'Outfit',sans-serif; font-size:14px; font-weight:800; color:#F59E0B; }
+    .prog-label { font-family:'Inter',sans-serif; font-size:13px; font-weight:600; color:var(--text-secondary); }
+    .prog-pct { font-family:'Outfit',sans-serif; font-size:14px; font-weight:800; color:var(--primary); }
     .prog-track {
-      height:8px; background:#F3F4F6; border-radius:4px;
+      height:8px; background:var(--border-color); border-radius:4px;
       position:relative; margin-bottom:6px;
     }
     .prog-fill {
-      height:100%; background:linear-gradient(90deg,#FCD34D,#F59E0B);
+      height:100%; background:var(--primary-gradient);
       border-radius:4px; transition:width 1s linear; position:relative;
     }
     .prog-car {
@@ -156,30 +156,30 @@ import { Driver } from '../../models/ride.models';
       transform: translate(50%, -50%) scaleX(-1);
     }
     .prog-places { display:flex; justify-content:space-between; margin-top:10px; }
-    .prog-places span { font-family:'Inter',sans-serif; font-size:12px; font-weight:600; color:#9CA3AF; }
+    .prog-places span { font-family:'Inter',sans-serif; font-size:12px; font-weight:600; color:var(--text-tertiary); }
     
-    .loc-summary { background:#F9FAFB; border:1px solid #F3F4F6; border-radius:16px; padding:16px; margin-bottom:16px; }
+    .loc-summary { background:var(--bg-color); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:16px; margin-bottom:var(--spacing-2); }
     .loc-row { display:flex; align-items:center; gap:12px; padding:4px 0; }
     .dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
-    .g { background:#10B981; } .r { background:#EF4444; }
-    .loc-row span { font-family:'Inter',sans-serif; font-size:14px; font-weight:500; color:#374151; }
+    .g { background:var(--success); } .r { background:var(--error); }
+    .loc-row span { font-family:'Inter',sans-serif; font-size:14px; font-weight:500; color:var(--text-primary); }
     
     .fare-info {
       display:flex; align-items:center; justify-content:space-between;
-      padding:16px 0; border-top:1px dashed #E5E7EB; margin-bottom:16px;
+      padding:16px 0; border-top:1px dashed var(--border-color); margin-bottom:var(--spacing-2);
     }
-    .fare-lbl { font-family:'Inter',sans-serif; font-size:14px; font-weight:600; color:#6B7280; }
-    .fare-val { font-family:'Outfit',sans-serif; font-size:24px; font-weight:800; color:#111827; letter-spacing:-0.5px; }
+    .fare-lbl { font-family:'Inter',sans-serif; font-size:14px; font-weight:600; color:var(--text-secondary); }
+    .fare-val { font-family:'Outfit',sans-serif; font-size:24px; font-weight:800; color:var(--text-primary); letter-spacing:-0.5px; }
     
     .actions { display:flex; gap:12px; }
     .act-btn {
-      flex:1; padding:14px 0; border-radius:16px; border:1px solid #E5E7EB; background:#ffffff;
-      font-family:'Inter',sans-serif; font-size:14px; font-weight:700; color:#374151;
+      flex:1; padding:14px 0; border-radius:var(--radius-sm); border:1.5px solid var(--border-color); background:var(--surface);
+      font-family:'Inter',sans-serif; font-size:14px; font-weight:700; color:var(--text-primary);
       display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.2s ease;
+      box-shadow: var(--shadow-sm); transition: all 0.2s ease;
     }
-    .act-btn:active { background:#F9FAFB; transform:scale(0.98); }
-    .act-btn.danger { color:#EF4444; background:#FEF2F2; border-color:#FECACA; }
+    .act-btn:active { background:var(--bg-color); transform:scale(0.98); }
+    .act-btn.danger { color:var(--error); background:#FEF2F2; border-color:#FECACA; }
     .act-btn.danger:active { background:#FEE2E2; }
   `]
 })

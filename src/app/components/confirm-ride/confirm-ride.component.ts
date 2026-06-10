@@ -122,31 +122,31 @@ import { Driver } from '../../models/ride.models';
     </div>
   `,
   styles: [`
-    .confirm-screen { width:100%; height:100dvh; display:flex; flex-direction:column; position:relative; }
+    .confirm-screen { width:100%; height:100dvh; display:flex; flex-direction:column; position:relative; overflow:hidden;}
     .top-bar {
       position:absolute; top:0; left:0; right:0; z-index:20;
-      padding:44px 16px 12px; background:rgba(255,255,255,0.95);
+      padding:calc(16px + var(--safe-top)) 16px 12px; background:rgba(255,255,255,0.95);
       backdrop-filter:blur(8px); display:flex; align-items:center; gap:12px;
-      box-shadow:0 2px 10px rgba(0,0,0,0.06);
+      box-shadow:var(--shadow-sm);
     }
     .back-btn {
-      width:40px; height:40px; background:#fff; border:1px solid #E5E7EB;
-      border-radius:12px; display:flex; align-items:center; justify-content:center;
-      cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,0.06);
+      width:40px; height:40px; background:var(--surface); border:1px solid var(--border-color);
+      border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center;
+      cursor:pointer; box-shadow:var(--shadow-sm); flex-shrink: 0;
     }
-    .top-bar h2 { font-family:'Outfit',sans-serif; font-size:18px; font-weight:700; color:#111827; margin:0; }
-    .map-box { height:36vh; }
+    .top-bar h2 { font-family:'Outfit',sans-serif; font-size:18px; font-weight:700; color:var(--text-primary); margin:0; }
+    .map-box { height:40vh; padding-top: calc(70px + var(--safe-top)); box-sizing: border-box; }
     .leaflet-map { width:100%; height:100%; }
     .booking-sheet {
-      flex:1; background:#fff; border-radius:24px 24px 0 0;
-      padding:24px 20px; overflow-y:auto;
-      box-shadow:0 -4px 24px rgba(0,0,0,0.06);
+      flex:1; background:var(--surface); border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+      padding:var(--spacing-3) var(--spacing-3) max(var(--spacing-4), var(--safe-bottom)); overflow-y:auto;
+      box-shadow:var(--shadow-sheet); z-index: 10;
     }
-    .sheet-handle { width:40px; height:4px; background:#E5E7EB; border-radius:4px; margin:0 auto 20px; }
+    .sheet-handle { width:40px; height:4px; background:var(--border-color); border-radius:4px; margin:0 auto var(--spacing-2); }
     
-    .driver-row { display:flex; align-items:center; gap:16px; margin-bottom:16px; }
+    .driver-row { display:flex; align-items:center; gap:16px; margin-bottom:var(--spacing-2); }
     .drv-avatar-wrap {
-      width:60px; height:60px; border-radius:50%; border:2.5px solid #FFB800;
+      width:60px; height:60px; border-radius:50%; border:2.5px solid var(--primary);
       display:flex; align-items:center; justify-content:center; flex-shrink:0;
       padding: 3px;
     }
@@ -155,63 +155,63 @@ import { Driver } from '../../models/ride.models';
       display:flex; align-items:center; justify-content:center; font-size:32px;
     }
     .drv-info { flex:1; }
-    .drv-info strong { display:block; font-family:'Outfit',sans-serif; font-size:17px; font-weight:800; color:#111827; letter-spacing:-0.2px; }
-    .drv-license { display:block; font-family:'Inter',sans-serif; font-size:12px; font-weight:500; color:#9CA3AF; margin-bottom:6px; }
+    .drv-info strong { display:block; font-family:'Outfit',sans-serif; font-size:17px; font-weight:800; color:var(--text-primary); letter-spacing:-0.2px; }
+    .drv-license { display:block; font-family:'Inter',sans-serif; font-size:12px; font-weight:500; color:var(--text-tertiary); margin-bottom:6px; }
     .exp-badge {
-      display:inline-block; background:#ECFDF5; color:#10B981;
+      display:inline-block; background:#ECFDF5; color:var(--success);
       border-radius:6px; padding:4px 10px; font-family:'Inter',sans-serif;
       font-size:12px; font-weight:700;
     }
-    .drv-rating { font-family:'Outfit',sans-serif; font-size:16px; font-weight:800; color:#111827; }
+    .drv-rating { font-family:'Outfit',sans-serif; font-size:16px; font-weight:800; color:var(--text-primary); }
     
-    .divider { height:1px; background:#F3F4F6; margin:16px 0; }
+    .divider { height:1px; background:var(--border-color); margin:16px 0; }
     
     .trip-row { display:flex; flex-direction:column; gap:14px; }
     .loc-item { display:flex; flex-direction:column; gap:4px; }
-    .loc-item small { font-family:'Inter',sans-serif; font-size:10px; font-weight:700; color:#9CA3AF; text-transform:uppercase; letter-spacing:0.5px; }
-    .loc-item strong { font-family:'Inter',sans-serif; font-size:14px; color:#374151; font-weight:700; }
+    .loc-item small { font-family:'Inter',sans-serif; font-size:10px; font-weight:700; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:0.5px; }
+    .loc-item strong { font-family:'Inter',sans-serif; font-size:14px; color:var(--text-primary); font-weight:700; }
     
     .meta-row { display:flex; align-items:center; justify-content:space-between; padding:8px 0; }
     .meta-left { display:flex; align-items:center; gap:12px; }
     .meta-icon { font-size:18px; width:24px; text-align:center; }
-    .meta-label { font-family:'Inter',sans-serif; font-size:14px; font-weight:600; color:#6B7280; }
-    .meta-val { font-family:'Inter',sans-serif; font-size:14px; font-weight:700; color:#111827; }
+    .meta-label { font-family:'Inter',sans-serif; font-size:14px; font-weight:600; color:var(--text-secondary); }
+    .meta-val { font-family:'Inter',sans-serif; font-size:14px; font-weight:700; color:var(--text-primary); }
     
     .change-btn {
-      background:#ffffff; border:1.5px solid #F59E0B; border-radius:12px;
+      background:var(--surface); border:1.5px solid var(--primary); border-radius:var(--radius-sm);
       padding:6px 14px; font-family:'Inter',sans-serif; font-size:13px;
       font-weight:700; color:#D97706; cursor:pointer;
     }
     
     .notes-row { margin:16px 0 20px; }
     .notes-input {
-      width:100%; border:1px solid #F3F4F6; border-radius:12px;
-      padding:14px 16px; font-family:'Inter',sans-serif; font-size:14px; color:#374151;
+      width:100%; border:1.5px solid var(--border-color); border-radius:var(--radius-sm);
+      padding:14px 16px; font-family:'Inter',sans-serif; font-size:14px; color:var(--text-primary);
       outline:none; transition:border-color 0.2s; box-sizing:border-box;
-      background: #FAFAFA;
+      background: var(--bg-color); height: 48px;
     }
-    .notes-input:focus { border-color:#FFB800; background: #fff; }
-    .notes-input::placeholder { color:#9CA3AF; }
+    .notes-input:focus { border-color:var(--primary); background: var(--surface); }
+    .notes-input::placeholder { color:var(--text-tertiary); }
     
     .fare-box {
-      background:#FFFBEB; border-radius:16px; padding:20px; margin-bottom:24px;
+      background:#FFFBEB; border-radius:var(--radius-md); padding:20px; margin-bottom:24px; border:1px solid #FDE68A;
     }
     .fare-breakdown { display:flex; justify-content:space-between; margin-bottom:10px; }
-    .fare-breakdown span { font-family:'Inter',sans-serif; font-size:13px; font-weight:500; color:#6B7280; }
+    .fare-breakdown span { font-family:'Inter',sans-serif; font-size:13px; font-weight:500; color:var(--text-secondary); }
     .fare-total-row {
       display:flex; justify-content:space-between; align-items:center;
       border-top:1px dashed rgba(217,119,6,0.3); padding-top:14px; margin-top:14px;
     }
-    .fare-total-row span:first-child { font-family:'Outfit',sans-serif; font-size:16px; font-weight:800; color:#111827; }
-    .total-amt { font-family:'Outfit',sans-serif; font-size:28px; font-weight:800; color:#F59E0B; letter-spacing:-0.5px; }
+    .fare-total-row span:first-child { font-family:'Outfit',sans-serif; font-size:16px; font-weight:800; color:var(--text-primary); }
+    .total-amt { font-family:'Outfit',sans-serif; font-size:28px; font-weight:800; color:#D97706; letter-spacing:-0.5px; }
     
     .btn-confirm {
-      width:100%; padding:18px; background:#F59E0B;
-      border:none; border-radius:14px; font-family:'Outfit',sans-serif;
+      width:100%; padding:16px; height:56px; background:var(--primary-gradient);
+      border:none; border-radius:var(--radius-md); font-family:'Outfit',sans-serif;
       font-size:18px; font-weight:800; color:#fff; cursor:pointer;
-      transition:all 0.2s;
+      transition:all 0.2s; box-shadow: 0 8px 24px rgba(255, 184, 0, 0.35);
     }
-    .btn-confirm:active { transform:scale(0.98); }
+    .btn-confirm:active { transform:scale(0.98); box-shadow: 0 4px 12px rgba(255, 184, 0, 0.2); }
   `]
 })
 export class ConfirmRideComponent implements AfterViewInit, OnDestroy {

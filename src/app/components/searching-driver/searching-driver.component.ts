@@ -35,18 +35,18 @@ import { MockDataService } from '../../services/mock-data.service';
     </div>
   `,
   styles: [`
-    .search-screen { width:100%; height:100vh; height:100dvh; display:flex; flex-direction:column; background-color:#fff; }
+    .search-screen { width:100%; height:100vh; height:100dvh; display:flex; flex-direction:column; background-color:var(--bg-color); }
     .map-box { flex:1; position:relative; }
     .leaflet-map { width:100%; height:100%; }
     .search-sheet {
-      background:#fff; border-radius:24px 24px 0 0;
-      padding:12px 24px 24px; display:flex; flex-direction:column;
-      box-shadow:0 -4px 24px rgba(0,0,0,0.08); z-index: 1000;
+      background:var(--surface); border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+      padding:12px var(--spacing-3) max(var(--spacing-3), var(--safe-bottom)); display:flex; flex-direction:column;
+      box-shadow:var(--shadow-sheet); z-index: 1000;
     }
-    .sheet-handle { width:36px; height:4px; background:#E5E7EB; border-radius:4px; margin:0 auto 16px; flex-shrink:0; }
+    .sheet-handle { width:36px; height:4px; background:var(--border-color); border-radius:4px; margin:0 auto var(--spacing-2); flex-shrink:0; }
     .anim-section { display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding-top:10px; }
-    h3 { font-family:'Outfit',sans-serif; font-size:18px; font-weight:700; color:#111827; margin:0 0 8px; text-align:center; min-height: 24px; }
-    p { font-family:'Inter',sans-serif; font-size:13px; color:#6B7280; margin:0; text-align:center; line-height:1.4; }
+    h3 { font-family:'Outfit',sans-serif; font-size:18px; font-weight:700; color:var(--text-primary); margin:0 0 8px; text-align:center; min-height: 24px; }
+    p { font-family:'Inter',sans-serif; font-size:13px; color:var(--text-secondary); margin:0; text-align:center; line-height:1.4; }
     
     .radar-box { position: relative; width: 140px; height: 140px; margin: 30px auto 40px; display: flex; align-items: center; justify-content: center; }
     .radar {
@@ -58,7 +58,7 @@ import { MockDataService } from '../../services/mock-data.service';
     .center-car-img { width: 60px; height: auto; z-index: 2; }
     .radar-dot {
       position: absolute; width: 10px; height: 10px; border-radius: 50%;
-      background: #10B981; box-shadow: 0 0 8px #10B981;
+      background: var(--success); box-shadow: 0 0 8px var(--success);
       animation: blink 2s infinite; opacity: 0;
     }
     @keyframes pulse {
@@ -68,11 +68,11 @@ import { MockDataService } from '../../services/mock-data.service';
     }
     @keyframes blink { 0%, 100% { opacity: 0; transform: scale(0.5); } 50% { opacity: 1; transform: scale(1.2); } }
     .btn-cancel {
-      width:100%; padding:14px; background:#fff; border:1px solid #E5E7EB;
-      border-radius:12px; font-family:'Outfit',sans-serif; font-size:15px;
-      font-weight:600; color:#374151; cursor:pointer; transition:all 0.2s;
+      width:100%; padding:14px; background:var(--surface); border:1.5px solid var(--border-color);
+      border-radius:var(--radius-sm); font-family:'Outfit',sans-serif; font-size:15px;
+      font-weight:600; color:var(--text-primary); cursor:pointer; transition:all 0.2s;
     }
-    .btn-cancel:hover { border-color:#EF4444; color:#EF4444; background:#FEF2F2; }
+    .btn-cancel:hover { border-color:var(--error); color:var(--error); background:#FEF2F2; }
   `]
 })
 export class SearchingDriverComponent implements AfterViewInit, OnDestroy {

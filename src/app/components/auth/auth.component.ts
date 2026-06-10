@@ -155,6 +155,7 @@ import { FormsModule } from '@angular/forms';
       height: 100dvh;
       position: relative;
       overflow: hidden;
+      background: var(--bg-color);
     }
     .screen {
       width: 100%;
@@ -193,7 +194,7 @@ import { FormsModule } from '@angular/forms';
     /* Logo overlay on hero */
     .hero-logo {
       position: absolute;
-      top: 48px;
+      top: calc(48px + var(--safe-top));
       left: 0;
       right: 0;
       display: flex;
@@ -216,7 +217,7 @@ import { FormsModule } from '@angular/forms';
     /* Signup top bar */
     .signup-top-bar {
       position: absolute;
-      top: 44px;
+      top: calc(44px + var(--safe-top));
       left: 16px;
       right: 16px;
       display: flex;
@@ -248,77 +249,49 @@ import { FormsModule } from '@angular/forms';
     ===================== */
     .form-card {
       flex: 1;
-      background: #ffffff;
-      border-radius: 28px 28px 0 0;
-      padding: 14px 22px 36px;
+      background: var(--surface);
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      padding: var(--spacing-3) var(--spacing-3) max(36px, var(--safe-bottom));
       margin-top: -20px;
       overflow-y: auto;
-      box-shadow: 0 -4px 32px rgba(0, 0, 0, 0.12);
+      box-shadow: var(--shadow-sheet);
       position: relative;
       z-index: 5;
     }
     .card-handle {
       width: 40px;
       height: 4px;
-      background: #E5E7EB;
+      background: var(--border-color);
       border-radius: 4px;
-      margin: 0 auto 16px;
+      margin: 0 auto var(--spacing-2);
     }
     h2 {
       font-family: 'Outfit', sans-serif;
       font-size: 26px;
       font-weight: 800;
-      color: #111827;
+      color: var(--text-primary);
       margin: 0 0 4px;
     }
     .subtitle {
       font-family: 'Inter', sans-serif;
       font-size: 14px;
-      color: #9CA3AF;
-      margin: 0 0 20px;
+      color: var(--text-secondary);
+      margin: 0 0 24px;
     }
 
     /* ---- Fields ---- */
-    .field { margin-bottom: 14px; }
+    .field { margin-bottom: 16px; }
     label {
       display: block;
       font-family: 'Inter', sans-serif;
       font-size: 12px;
       font-weight: 600;
-      color: #374151;
+      color: var(--text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
-    .input-box {
-      display: flex;
-      align-items: center;
-      background: #ffffff;
-      border: 1.5px solid #E5E7EB;
-      border-radius: 14px;
-      overflow: hidden;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-    .input-box:focus-within {
-      border-color: #FFB800;
-      box-shadow: 0 0 0 3px rgba(255, 184, 0, 0.12);
-    }
-    .inp-icon {
-      padding: 0 12px;
-      font-size: 17px;
-      flex-shrink: 0;
-    }
-    input {
-      flex: 1;
-      border: none;
-      outline: none;
-      background: transparent;
-      padding: 15px 12px 15px 0;
-      font-family: 'Inter', sans-serif;
-      font-size: 15px;
-      color: #111827;
-    }
-    input::placeholder { color: #C4C9D4; }
+    /* .input-box is globally defined but we can extend it or let it inherit */
     .eye-btn {
       background: none;
       border: none;
@@ -330,55 +303,36 @@ import { FormsModule } from '@angular/forms';
     .forgot {
       display: block;
       text-align: right;
-      margin-top: 6px;
+      margin-top: 8px;
       font-family: 'Inter', sans-serif;
       font-size: 13px;
-      color: #FFB800;
+      color: var(--primary);
       font-weight: 600;
       text-decoration: none;
     }
 
-    /* ---- Primary Button ---- */
-    .btn-primary {
-      width: 100%;
-      padding: 17px;
-      margin-top: 6px;
-      background: linear-gradient(135deg, #FFB800, #FF8C00);
-      border: none;
-      border-radius: 16px;
-      font-family: 'Outfit', sans-serif;
-      font-size: 18px;
-      font-weight: 700;
-      color: #fff;
-      cursor: pointer;
-      box-shadow: 0 10px 28px rgba(255, 184, 0, 0.45);
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 56px;
-    }
-    .btn-primary:active { transform: scale(0.97); }
-    .btn-primary.loading { opacity: 0.8; cursor: not-allowed; }
+    /* ---- Primary Button Extra ---- */
+    .btn-primary { margin-top: 12px; }
+    .btn-primary.loading { opacity: 0.8; cursor: not-allowed; box-shadow: none; }
 
     /* ---- Divider ---- */
     .divider {
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin: 18px 0 14px;
+      gap: 12px;
+      margin: 24px 0 20px;
     }
     .divider::before,
     .divider::after {
       content: '';
       flex: 1;
       height: 1px;
-      background: #E5E7EB;
+      background: var(--border-color);
     }
     .divider span {
       font-family: 'Inter', sans-serif;
       font-size: 12px;
-      color: #9CA3AF;
+      color: var(--text-tertiary);
       white-space: nowrap;
     }
 
@@ -386,38 +340,39 @@ import { FormsModule } from '@angular/forms';
     .social-row {
       display: flex;
       justify-content: center;
-      gap: 14px;
-      margin-bottom: 16px;
+      gap: 16px;
+      margin-bottom: 24px;
     }
     .social-btn {
       width: 56px;
       height: 56px;
-      background: #FFFFFF;
-      border: 1.5px solid #E5E7EB;
-      border-radius: 16px;
+      background: var(--surface);
+      border: 1.5px solid var(--border-color);
+      border-radius: var(--radius-md);
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       font-size: 22px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      box-shadow: var(--shadow-sm);
       transition: all 0.2s;
     }
-    .social-btn:hover { border-color: #FFB800; transform: translateY(-2px); }
+    .social-btn:hover { border-color: var(--primary); transform: translateY(-2px); }
 
     /* ---- Switch Link ---- */
     .switch {
       text-align: center;
       font-family: 'Inter', sans-serif;
       font-size: 14px;
-      color: #6B7280;
+      color: var(--text-secondary);
       margin: 0;
-      margin-top: 20px;
+      margin-top: auto;
+      padding-top: 20px;
     }
     .switch button {
       background: none;
       border: none;
-      color: #FFB800;
+      color: var(--primary);
       font-family: 'Inter', sans-serif;
       font-size: 14px;
       font-weight: 700;

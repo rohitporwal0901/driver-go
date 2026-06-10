@@ -78,69 +78,69 @@ import { Driver } from '../../models/ride.models';
   `,
   styles: [`
     .found-screen { width:100%; height:100dvh; display:flex; flex-direction:column; overflow: hidden; }
-    .map-box { height:45dvh; min-height: 300px; padding-top: var(--safe-top, 0px); box-sizing: border-box; }
+    .map-box { height:45dvh; min-height: 300px; padding-top: var(--safe-top); box-sizing: border-box; }
     .leaflet-map { width:100%; height:100%; }
     .found-sheet {
-      flex:1; background:#fff; border-radius:24px 24px 0 0;
-      padding:24px 24px max(32px, env(safe-area-inset-bottom)); overflow-y:auto;
-      box-shadow:0 -8px 30px rgba(0,0,0,0.06); z-index: 10;
+      flex:1; background:var(--surface); border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+      padding:var(--spacing-3) var(--spacing-3) max(var(--spacing-4), var(--safe-bottom)); overflow-y:auto;
+      box-shadow:var(--shadow-sheet); z-index: 10;
     }
-    .sheet-handle { width:32px; height:4px; background:#E5E7EB; border-radius:4px; margin:0 auto 24px; }
+    .sheet-handle { width:32px; height:4px; background:var(--border-color); border-radius:4px; margin:0 auto var(--spacing-3); }
     
     .driver-card {
-      display:flex; align-items:flex-start; gap:16px; margin-bottom:24px;
+      display:flex; align-items:flex-start; gap:16px; margin-bottom:var(--spacing-3);
     }
     .drv-avatar {
-      width:56px; height:56px; background:#F3F4F6; border-radius:50%;
-      display:flex; align-items:center; justify-content:center; font-size:32px; flex-shrink:0;
+      width:56px; height:56px; background:var(--bg-color); border-radius:50%;
+      display:flex; align-items:center; justify-content:center; font-size:32px; flex-shrink:0; border: 2px solid var(--primary);
     }
     .drv-info { flex:1; display:flex; flex-direction:column; gap:4px; min-width: 0; }
     .drv-top { display:flex; align-items:center; justify-content:space-between; }
-    .drv-top strong { font-family:'Inter',sans-serif; font-size:16px; font-weight:700; color:#111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .rating { font-family:'Inter',sans-serif; font-size:13px; font-weight:600; color:#374151; flex-shrink: 0; margin-left: 8px; }
-    .drv-sub { font-family:'Inter',sans-serif; font-size:13px; color:#6B7280; font-weight:500; }
+    .drv-top strong { font-family:'Inter',sans-serif; font-size:16px; font-weight:700; color:var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .rating { font-family:'Inter',sans-serif; font-size:13px; font-weight:600; color:var(--text-secondary); flex-shrink: 0; margin-left: 8px; }
+    .drv-sub { font-family:'Inter',sans-serif; font-size:13px; color:var(--text-secondary); font-weight:500; }
     .drv-badge { 
-      display: inline-block; padding: 2px 8px; border-radius: 4px; background: #F3F4F6;
-      border: 1px solid #E5E7EB; font-family: 'Inter', sans-serif; font-size: 11px;
-      font-weight: 700; color: #374151; letter-spacing: 0.5px; width: max-content;
+      display: inline-block; padding: 2px 8px; border-radius: 4px; background: var(--bg-color);
+      border: 1px solid var(--border-color); font-family: 'Inter', sans-serif; font-size: 11px;
+      font-weight: 700; color: var(--text-secondary); letter-spacing: 0.5px; width: max-content;
     }
     
     .loc-section {
-      position:relative; padding-left:4px; margin-bottom:24px;
+      position:relative; padding-left:4px; margin-bottom:var(--spacing-3);
     }
     .loc-row { display:flex; align-items:center; gap:16px; margin:16px 0; }
-    .loc-icon { font-size:16px; display:flex; align-items:center; justify-content:center; background:#fff; z-index:2; position:relative; }
-    .green { color:#10B981; }
-    .red { color:#EF4444; }
+    .loc-icon { font-size:16px; display:flex; align-items:center; justify-content:center; background:var(--surface); z-index:2; position:relative; }
+    .green { color:var(--success); }
+    .red { color:var(--error); }
     .loc-line {
       position:absolute; left:11px; top:24px; bottom:24px; width:0px;
-      border-left:2px dotted #D1D5DB; z-index:1;
+      border-left:2px dotted var(--border-color); z-index:1;
     }
-    .loc-text { flex: 1; font-family:'Inter',sans-serif; font-size:14px; color:#374151; font-weight:500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .loc-text { flex: 1; font-family:'Inter',sans-serif; font-size:14px; color:var(--text-primary); font-weight:500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     
     .fare-row {
       display:flex; justify-content:space-between; align-items:center;
-      margin-bottom:24px; padding-top:20px; border-top:1px solid #F3F4F6;
+      margin-bottom:24px; padding-top:20px; border-top:1px solid var(--border-color);
     }
-    .fare-row span { font-family:'Inter',sans-serif; font-size:14px; color:#4B5563; font-weight:600; }
-    .fare-row strong { font-family:'Inter',sans-serif; font-size:18px; font-weight:800; color:#111827; }
+    .fare-row span { font-family:'Inter',sans-serif; font-size:14px; color:var(--text-secondary); font-weight:600; }
+    .fare-row strong { font-family:'Inter',sans-serif; font-size:18px; font-weight:800; color:var(--text-primary); }
     
-    .action-row { display:flex; gap:12px; margin-bottom:24px; }
+    .action-row { display:flex; gap:12px; margin-bottom:var(--spacing-3); }
     .act-btn {
       flex:1; display:flex; align-items:center; justify-content:center; gap:6px;
-      padding:14px 0; border-radius:16px; border:1px solid #E5E7EB; background:#ffffff;
-      font-family:'Inter',sans-serif; font-size:14px; font-weight:700; color:#374151; cursor:pointer;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.2s ease;
+      padding:14px 0; border-radius:var(--radius-sm); border:1.5px solid var(--border-color); background:var(--surface);
+      font-family:'Inter',sans-serif; font-size:14px; font-weight:700; color:var(--text-primary); cursor:pointer;
+      box-shadow: var(--shadow-sm); transition: all 0.2s ease;
     }
-    .act-btn:active { background:#F9FAFB; transform:scale(0.98); }
+    .act-btn:active { background:var(--bg-color); transform:scale(0.98); }
     
     .btn-start {
-      width:100%; padding:18px; background:#F59E0B;
-      border:none; border-radius:16px; font-family:'Outfit',sans-serif;
+      width:100%; padding:16px; height:56px; background:var(--primary-gradient);
+      border:none; border-radius:var(--radius-md); font-family:'Outfit',sans-serif;
       font-size:18px; font-weight:800; color:#ffffff; cursor:pointer;
-      box-shadow: 0 4px 12px rgba(245,158,11,0.3); transition:all 0.2s ease;
+      box-shadow: 0 8px 24px rgba(255, 184, 0, 0.35); transition:all 0.2s ease;
     }
-    .btn-start:active{ transform:scale(0.98); background:#D97706; box-shadow:none; }
+    .btn-start:active{ transform:scale(0.98); box-shadow: 0 4px 12px rgba(255, 184, 0, 0.2); }
   `]
 })
 export class DriverFoundComponent implements AfterViewInit, OnDestroy {
