@@ -411,7 +411,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
         const lng = position.coords.longitude;
         
         this.mapSvc.panTo(map, lat, lng, 13);
-        this.mapSvc.addDotMarker(map, 'my-loc', lat, lng, '#3B82F6', 'You');
+        this.mapSvc.addDotMarker(map, 'my-loc', lat, lng, '#22C55E', 'You');
 
         const geoInfo = await this.mapSvc.reverseGeocode(lat, lng);
         if (geoInfo) {
@@ -577,8 +577,8 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!map) return;
     
     // add markers
-    this.mapSvc.addDotMarker(map, 'pickup', this.pickup.lat, this.pickup.lng, '#22C55E', 'Pickup');
-    this.mapSvc.addDotMarker(map, 'drop', this.drop.lat, this.drop.lng, '#EF4444', 'Drop');
+    this.mapSvc.addDotMarker(map, 'pickup', this.pickup.lat, this.pickup.lng, '#22C55E', this.pickup.name || 'Pickup');
+    this.mapSvc.addDotMarker(map, 'drop', this.drop.lat, this.drop.lng, '#EF4444', this.drop.name || 'Drop');
 
     const result = await this.mapSvc.getRouteDistance(
       [this.pickup.lat, this.pickup.lng],
@@ -589,14 +589,14 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       this.distance = Math.round(result.distanceKm);
       this.fare = this.getEstimatedFare(this.selectedCar!);
       
-      this.mapSvc.drawRoute(map, 'route', result.routePoints, '#FFB800', false);
+      this.mapSvc.drawRoute(map, 'route', result.routePoints, '#111111', false);
       this.mapSvc.fitBounds(map, result.routePoints);
     } else {
       // Fallback
       this.distance = Math.round(this.mockData.calculateDistance(this.pickup, this.drop));
       this.fare = this.getEstimatedFare(this.selectedCar!);
       
-      this.mapSvc.drawRoute(map, 'route', [[this.pickup.lat, this.pickup.lng], [this.drop.lat, this.drop.lng]], '#FFB800', true);
+      this.mapSvc.drawRoute(map, 'route', [[this.pickup.lat, this.pickup.lng], [this.drop.lat, this.drop.lng]], '#111111', true);
       this.mapSvc.fitBounds(map, [[this.pickup.lat, this.pickup.lng], [this.drop.lat, this.drop.lng]]);
     }
   }

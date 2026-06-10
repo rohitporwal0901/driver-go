@@ -11,6 +11,16 @@ import { MockDataService } from '../../services/mock-data.service';
   imports: [CommonModule],
   template: `
     <div class="search-screen">
+      <!-- Header -->
+      <div class="top-bar">
+        <button class="back-btn" (click)="cancel()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="#111827" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <h2>Connecting</h2>
+      </div>
+
       <!-- Map with animated car -->
       <div class="map-box">
         <div id="search-map" class="leaflet-map"></div>
@@ -21,7 +31,6 @@ import { MockDataService } from '../../services/mock-data.service';
         <div class="sheet-handle"></div>
         <div class="anim-section">
           <h3>{{ statusMsg }}</h3>
-          <p>Sending to 3 nearby drivers...</p>
           <div class="radar-box">
              <div class="radar"></div>
              <div class="radar-dot" style="top: 20%; left: 30%;"></div>
@@ -36,7 +45,20 @@ import { MockDataService } from '../../services/mock-data.service';
   `,
   styles: [`
     .search-screen { width:100%; height:100vh; height:100dvh; display:flex; flex-direction:column; background-color:var(--bg-color); }
-    .map-box { flex:1; position:relative; }
+    
+    .top-bar {
+      position:absolute; top:calc(16px + var(--safe-top)); left:16px; right:16px; z-index:2000;
+      padding:16px; border-radius:var(--radius-md); background:var(--surface);
+      display:flex; align-items:center; gap:12px; box-shadow:var(--shadow-md);
+    }
+    .back-btn {
+      width:40px; height:40px; background:var(--bg-color); border:1px solid var(--border-color);
+      border-radius:12px; display:flex; align-items:center; justify-content:center;
+      cursor:pointer; box-shadow:var(--shadow-sm); flex-shrink: 0;
+    }
+    .top-bar h2 { font-family:'Outfit',sans-serif; font-size:18px; font-weight:700; color:var(--text-primary); margin:0; }
+
+    .map-box { flex:1; position:relative; z-index:1; }
     .leaflet-map { width:100%; height:100%; }
     .search-sheet {
       background:var(--surface); border-radius:var(--radius-lg) var(--radius-lg) 0 0;
@@ -78,12 +100,11 @@ import { MockDataService } from '../../services/mock-data.service';
 export class SearchingDriverComponent implements AfterViewInit, OnDestroy {
   progress = 0;
   driverEmoji = '🚗';
-  statusMsg = 'Searching for drivers...';
+  statusMsg = 'Connecting to driver...';
   private statusMsgs = [
-    'Searching for drivers...',
-    'Contacting 3 nearby drivers...',
-    'Waiting for driver confirmation...',
-    'Driver found! Confirming details...',
+    'Connecting to driver...',
+    'Waiting for confirmation...',
+    'Driver confirmed!',
   ];
   private progInterval?: ReturnType<typeof setInterval>;
   private msgTimeout?: ReturnType<typeof setTimeout>;
@@ -142,7 +163,7 @@ export class SearchingDriverComponent implements AfterViewInit, OnDestroy {
     this.navTimeout = setTimeout(() => {
       this.rideState.setStatus('driver-found');
       this.router.navigate(['/driver-found']);
-    }, 4500);
+    }, 4000);
   }
 
   ngOnDestroy(): void {

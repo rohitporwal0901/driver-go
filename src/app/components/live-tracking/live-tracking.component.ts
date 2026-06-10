@@ -11,8 +11,18 @@ import { Driver } from '../../models/ride.models';
   imports: [CommonModule],
   template: `
     <div class="tracking-screen">
+      <!-- Header -->
+      <div class="top-bar">
+        <button class="back-btn" (click)="router.navigate(['/home'])">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="#111827" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <h2>Driver on the way</h2>
+      </div>
+
       <!-- Top Pill -->
-      <div class="eta-pill">
+      <div class="eta-pill" *ngIf="etaMin > 0">
         <span class="pill-dot"></span>
         <span>{{ statusLabel }}: <strong>{{ etaMin }} min</strong></span>
         <span class="status-icon">{{ statusEmoji }}</span>
@@ -64,16 +74,50 @@ import { Driver } from '../../models/ride.models';
           <button class="act-btn"><span class="icon">💬</span> Chat</button>
           <button class="act-btn danger">Cancel</button>
         </div>
+
+        <button class="btn-start" id="start-trip-btn" (click)="startTrip()" [disabled]="etaMin > 0">
+          {{ etaMin > 0 ? 'Wait for Driver' : 'Enter OTP to Start Trip' }}
+        </button>
+      </div>
+
+      <!-- OTP Verification Sheet Overlay -->
+      <div class="otp-overlay" *ngIf="showOtpSheet">
+        <div class="otp-sheet-content">
+          <div class="sheet-handle"></div>
+          <h3>Verify OTP</h3>
+          <p>Enter the 4-digit OTP shown above (5924) to simulate driver verification.</p>
+          <div class="otp-inputs">
+            <input type="text" maxlength="1" #otp1 (keyup)="onOtpInput(1, $event, otp2, null)" />
+            <input type="text" maxlength="1" #otp2 (keyup)="onOtpInput(2, $event, otp3, otp1)" />
+            <input type="text" maxlength="1" #otp3 (keyup)="onOtpInput(3, $event, otp4, otp2)" />
+            <input type="text" maxlength="1" #otp4 (keyup)="onOtpInput(4, $event, null, otp3)" />
+          </div>
+          <button class="btn-start" [disabled]="!isOtpValid()" (click)="verifyAndStart()">Verify & Start Trip</button>
+          <button class="btn-cancel" (click)="showOtpSheet = false">Cancel</button>
+        </div>
       </div>
     </div>
   `,
   styles: [`
     .tracking-screen { width:100%; height:100dvh; position:relative; overflow:hidden; }
+    
+    .top-bar {
+      position:absolute; top:calc(16px + var(--safe-top)); left:16px; right:16px; z-index:2000;
+      padding:16px; border-radius:var(--radius-md); background:var(--surface);
+      display:flex; align-items:center; gap:12px; box-shadow:var(--shadow-md);
+    }
+    .back-btn {
+      width:40px; height:40px; background:var(--bg-color); border:1px solid var(--border-color);
+      border-radius:12px; display:flex; align-items:center; justify-content:center;
+      cursor:pointer; box-shadow:var(--shadow-sm); flex-shrink: 0;
+    }
+    .top-bar h2 { font-family:'Outfit',sans-serif; font-size:18px; font-weight:700; color:var(--text-primary); margin:0; }
+
     .map-container { position:absolute; inset:0; z-index:1; }
     .leaflet-map { width:100%; height:100%; }
     
     .eta-pill {
-      position:absolute; top: calc(16px + var(--safe-top)); left:50%; transform:translateX(-50%);
+      position:absolute; top: calc(100px + var(--safe-top)); left:50%; transform:translateX(-50%);
       background:var(--text-primary); color:var(--bg-color); border-radius:30px; padding:10px 16px;
       display:flex; align-items:center; gap:8px; z-index:20;
       box-shadow:var(--shadow-sm); font-family:'Inter',sans-serif; font-size:14px;
@@ -134,7 +178,7 @@ import { Driver } from '../../models/ride.models';
       right:0; font-size:24px; transition:right 1s linear; z-index:2; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.1));
     }
     
-    .actions-row { display:flex; gap:12px; }
+    .actions-row { display:flex; gap:12px; margin-bottom: 16px; }
     .act-btn {
       flex:1; padding:14px 0; border-radius:var(--radius-sm); border:1.5px solid var(--border-color); background:var(--surface);
       font-family:'Inter',sans-serif; font-size:14px; font-weight:700; color:var(--text-primary);
@@ -144,6 +188,44 @@ import { Driver } from '../../models/ride.models';
     .act-btn .icon { font-size: 16px; }
     .act-btn:active { background:var(--bg-color); transform:scale(0.98); }
     .act-btn.danger { color:var(--error); background:#FEF2F2; border-color:#FECACA; }
+    
+    .btn-start {
+      width:100%; padding:16px; height:56px; background:var(--primary-gradient);
+      border:none; border-radius:var(--radius-md); font-family:'Outfit',sans-serif;
+      font-size:18px; font-weight:800; color:#ffffff; cursor:pointer;
+      box-shadow: 0 8px 24px rgba(255, 184, 0, 0.35); transition:all 0.2s ease;
+    }
+    .btn-start:disabled { background: #FCD34D; color: rgba(255,255,255,0.8); cursor:not-allowed; box-shadow:none; }
+    .btn-start:not(:disabled):active{ transform:scale(0.98); box-shadow: 0 4px 12px rgba(255, 184, 0, 0.2); }
+    
+    .otp-overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px);
+      z-index:100; display:flex; align-items:flex-end;
+    }
+    .otp-sheet-content {
+      width:100%; background:var(--surface); border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+      padding:24px 20px max(32px, var(--safe-bottom)); box-shadow:var(--shadow-sheet);
+      animation:slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); display:flex; flex-direction:column;
+    }
+    @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+    
+    .otp-sheet-content h3 { font-family:'Outfit',sans-serif; font-size:20px; font-weight:800; color:var(--text-primary); margin:0 0 8px; text-align:center; }
+    .otp-sheet-content p { font-family:'Inter',sans-serif; font-size:14px; color:var(--text-secondary); text-align:center; margin:0 0 24px; line-height:1.5; }
+    
+    .otp-inputs { display:flex; gap:12px; justify-content:center; margin-bottom:32px; }
+    .otp-inputs input {
+      width:50px; height:60px; border:2px solid var(--border-color); border-radius:var(--radius-md);
+      font-family:'Outfit',sans-serif; font-size:24px; font-weight:800; color:var(--text-primary);
+      text-align:center; outline:none; background:var(--bg-color); transition:all 0.2s;
+    }
+    .otp-inputs input:focus { border-color:var(--primary); background:var(--surface); box-shadow:0 0 0 4px rgba(255,184,0,0.1); }
+    
+    .btn-cancel {
+      width:100%; padding:16px; margin-top:12px; background:transparent; border:none;
+      font-family:'Inter',sans-serif; font-size:16px; font-weight:600; color:var(--text-secondary);
+      cursor:pointer; transition:color 0.2s;
+    }
+    .btn-cancel:active { color:var(--text-primary); }
   `]
 })
 export class LiveTrackingComponent implements AfterViewInit, OnDestroy {
@@ -154,6 +236,8 @@ export class LiveTrackingComponent implements AfterViewInit, OnDestroy {
   arrivalProgress = 0;
   statusLabel = 'Driver En Route';
   statusEmoji = '🚗';
+  showOtpSheet = false;
+  otpValues = ['', '', '', ''];
 
   private moveInterval?: ReturnType<typeof setInterval>;
   private etaInterval?: ReturnType<typeof setInterval>;
@@ -197,26 +281,26 @@ export class LiveTrackingComponent implements AfterViewInit, OnDestroy {
       const map = this.mapSvc.createMap('track-map', driverStart, 10);
       this.mapSvc.addDotMarker(map, 'tp', p[0], p[1], '#22C55E', 'Pickup');
       this.mapSvc.addDotMarker(map, 'td', d[0], d[1], '#EF4444', 'Drop');
-      this.mapSvc.drawRoute(map, 'troute', [driverStart, p, d], '#FFB800');
+      this.mapSvc.drawRoute(map, 'troute', [driverStart, p, d], '#111111');
       this.mapSvc.addEmojiMarker(map, 'tdrv', driverStart[0], driverStart[1], this.driver?.photo || '🚗', 36, true);
 
-      // Animate driver along route
+      // Animate driver along route up to pickup point
+      const pickupIndex = Math.floor(this.routePoints.length * 0.4);
+      
       this.moveInterval = setInterval(() => {
-        if (this.routeIdx < this.routePoints.length - 1) {
+        if (this.routeIdx < pickupIndex) {
           this.routeIdx++;
           const [lat, lng] = this.routePoints[this.routeIdx];
           this.mapSvc.moveMarker('tdrv', lat, lng, 700);
           this.mapSvc.panTo(map, lat, lng);
-          this.arrivalProgress = (this.routeIdx / this.routePoints.length) * 100;
+          this.arrivalProgress = (this.routeIdx / pickupIndex) * 100;
 
           // Update status
-          if (this.routeIdx === Math.floor(this.routePoints.length * 0.4)) {
+          if (this.routeIdx === pickupIndex) {
             this.statusLabel = 'Driver Arrived at Pickup!';
             this.statusEmoji = '📍';
             this.etaMin = 0;
-          } else if (this.routeIdx > Math.floor(this.routePoints.length * 0.4)) {
-            this.statusLabel = 'Trip in Progress';
-            this.statusEmoji = '🛣️';
+            clearInterval(this.moveInterval);
           }
         }
       }, 700);
@@ -226,16 +310,38 @@ export class LiveTrackingComponent implements AfterViewInit, OnDestroy {
       }, 5000);
     }, 100);
 
-    this.navTimeout = setTimeout(() => {
-      this.rideState.startTrip();
-      this.router.navigate(['/on-ride']);
-    }, 18000);
+
   }
 
   ngOnDestroy(): void {
     clearInterval(this.moveInterval);
     clearInterval(this.etaInterval);
-    clearTimeout(this.navTimeout);
     this.mapSvc.removeMap('track-map');
+  }
+
+  startTrip(): void {
+    this.showOtpSheet = true;
+  }
+
+  onOtpInput(index: number, event: any, nextInput: any, prevInput: any) {
+    const value = event.target.value;
+    this.otpValues[index - 1] = value;
+    
+    if (value && nextInput) {
+      nextInput.focus();
+    } else if (!value && event.key === 'Backspace' && prevInput) {
+      prevInput.focus();
+    }
+  }
+
+  isOtpValid(): boolean {
+    return this.otpValues.join('') === '5924';
+  }
+
+  verifyAndStart(): void {
+    if (this.isOtpValid()) {
+      this.rideState.startTrip();
+      this.router.navigate(['/on-ride']);
+    }
   }
 }

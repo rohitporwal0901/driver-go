@@ -81,20 +81,19 @@ import { Driver } from '../../models/ride.models';
   styles: [`
     .drivers-screen { width:100%; height:100dvh; display:flex; flex-direction:column; position:relative; overflow:hidden; }
     .top-bar {
-      position:absolute; top:0; left:0; right:0; z-index:20;
-      padding: calc(16px + var(--safe-top)) 16px 12px; background:rgba(255,255,255,0.95);
-      backdrop-filter:blur(8px); display:flex; align-items:center; gap:12px;
-      box-shadow:var(--shadow-sm);
+      position:absolute; top:calc(16px + var(--safe-top)); left:16px; right:16px; z-index:2000;
+      padding:16px; border-radius:var(--radius-md); background:var(--surface);
+      display:flex; align-items:center; gap:12px; box-shadow:var(--shadow-md);
     }
     .back-btn {
-      width:40px; height:40px; background:var(--surface); border:1px solid var(--border-color);
-      border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center;
+      width:40px; height:40px; background:var(--bg-color); border:1px solid var(--border-color);
+      border-radius:12px; display:flex; align-items:center; justify-content:center;
       cursor:pointer; flex-shrink:0; box-shadow:var(--shadow-sm);
     }
     .route-info { flex:1; }
     .route-text { display:block; font-family:'Outfit',sans-serif; font-size:16px; font-weight:700; color:var(--text-primary); }
     .route-meta { font-family:'Inter',sans-serif; font-size:12px; color:var(--text-secondary); }
-    .map-box { height:45dvh; padding-top: calc(70px + var(--safe-top)); box-sizing: border-box; }
+    .map-box { height:45dvh; position:relative; }
     .leaflet-map { width:100%; height:100%; }
     .driver-sheet {
       flex:1; background:var(--surface); border-radius:var(--radius-lg) var(--radius-lg) 0 0;

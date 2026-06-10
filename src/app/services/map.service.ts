@@ -36,8 +36,9 @@ export class MapService {
       attributionControl: false,
     });
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
+    L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+      maxZoom: 20,
+      subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
     }).addTo(map);
 
     this.maps.set(elementId, map);
@@ -93,19 +94,24 @@ export class MapService {
   addDotMarker(map: L.Map, id: string, lat: number, lng: number, color: string, label?: string): L.Marker {
     const icon = L.divIcon({
       html: `
-        <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
-          ${label ? `<div style="background:white;border:1px solid #ddd;border-radius:4px;padding:2px 6px;font-family:Inter,sans-serif;font-size:10px;font-weight:600;color:#111;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,0.15)">${label}</div>` : ''}
-          <div style="
-            width:16px;height:16px;border-radius:50%;
-            background:${color};
-            border:3px solid white;
-            box-shadow:0 0 0 2px ${color},0 3px 10px rgba(0,0,0,0.2);
-          "></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+          ${label ? `<div style="background:white;border-radius:6px;padding:6px 10px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:#111;white-space:nowrap;box-shadow:0 3px 8px rgba(0,0,0,0.15);display:flex;align-items:center;gap:8px;">
+            <span style="overflow:hidden;text-overflow:ellipsis;max-width:140px;display:inline-block;">${label}</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </div>` : ''}
+          <div style="position:relative;">
+            <div style="
+              width:20px;height:20px;border-radius:50%;
+              background:white;
+              border:5px solid ${color};
+              box-shadow:0 2px 4px rgba(0,0,0,0.2);
+            "></div>
+          </div>
         </div>
       `,
       className: '',
-      iconSize: [16, label ? 36 : 16],
-      iconAnchor: [8, label ? 36 : 8],
+      iconSize: [24, label ? 60 : 24],
+      iconAnchor: [12, label ? 60 : 12],
     });
 
     if (this.markers.has(id)) this.markers.get(id)!.remove();
@@ -134,17 +140,37 @@ export class MapService {
     requestAnimationFrame(animate);
   }
 
-  drawRoute(map: L.Map, id: string, points: [number, number][], color = '#FFB800', dashed = false): L.Polyline {
+  drawRoute(map: L.Map, id: string, points: [number, number][], color = '#000000', dashed = false): L.Polyline {
     if (this.polylines.has(id)) this.polylines.get(id)!.remove();
+    
+    // Draw white outline/background for the route line
+    const outline = L.polyline(points, {
+      color: '#ffffff',
+      weight: 8,
+      opacity: 1,
+      lineJoin: 'round',
+      lineCap: 'round',
+    }).addTo(map);
+    // Let's store outline as well if needed, but it will be left on map. We should group them or store to remove.
+    // For now, simplify by just using the black line directly, or keep track of group.
+    
     const line = L.polyline(points, {
-      color,
+      color: color,
       weight: 4,
-      opacity: 0.85,
+      opacity: 1,
       dashArray: dashed ? '10, 8' : undefined,
       lineJoin: 'round',
       lineCap: 'round',
     }).addTo(map);
-    this.polylines.set(id, line);
+    
+    // Store as a feature group so both can be removed
+    const group = L.featureGroup([outline, line]);
+    
+    if (this.polylines.has(id)) {
+        map.removeLayer(this.polylines.get(id)!);
+    }
+    
+    this.polylines.set(id, group as any);
     return line;
   }
 

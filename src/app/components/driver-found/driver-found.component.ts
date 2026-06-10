@@ -11,6 +11,16 @@ import { Driver } from '../../models/ride.models';
   imports: [CommonModule],
   template: `
     <div class="found-screen">
+      <!-- Header -->
+      <div class="top-bar">
+        <button class="back-btn" (click)="router.navigate(['/home'])">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="#111827" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <h2>Booking Confirmed</h2>
+      </div>
+
       <div class="map-box">
         <div id="found-map" class="leaflet-map"></div>
       </div>
@@ -71,14 +81,27 @@ import { Driver } from '../../models/ride.models';
         </div>
 
         <button class="btn-start" id="start-trip-btn" (click)="startTrip()">
-          Start Trip
+          Track Ride
         </button>
       </div>
     </div>
   `,
   styles: [`
-    .found-screen { width:100%; height:100dvh; display:flex; flex-direction:column; overflow: hidden; }
-    .map-box { height:45dvh; min-height: 300px; padding-top: var(--safe-top); box-sizing: border-box; }
+    .found-screen { width:100%; height:100dvh; display:flex; flex-direction:column; overflow: hidden; position: relative; }
+    
+    .top-bar {
+      position:absolute; top:calc(16px + var(--safe-top)); left:16px; right:16px; z-index:2000;
+      padding:16px; border-radius:var(--radius-md); background:var(--surface);
+      display:flex; align-items:center; gap:12px; box-shadow:var(--shadow-md);
+    }
+    .back-btn {
+      width:40px; height:40px; background:var(--bg-color); border:1px solid var(--border-color);
+      border-radius:12px; display:flex; align-items:center; justify-content:center;
+      cursor:pointer; box-shadow:var(--shadow-sm); flex-shrink: 0;
+    }
+    .top-bar h2 { font-family:'Outfit',sans-serif; font-size:18px; font-weight:700; color:var(--text-primary); margin:0; }
+
+    .map-box { height:45dvh; min-height: 300px; position:relative; z-index:1; }
     .leaflet-map { width:100%; height:100%; }
     .found-sheet {
       flex:1; background:var(--surface); border-radius:var(--radius-lg) var(--radius-lg) 0 0;
@@ -172,7 +195,7 @@ export class DriverFoundComponent implements AfterViewInit, OnDestroy {
       if (this.driver) {
         const driverStart: [number, number] = [p[0] + 0.03, p[1] - 0.02];
         this.mapSvc.addEmojiMarker(map, 'fdrv', driverStart[0], driverStart[1], this.driver.photo || '🚗', 34, true);
-        this.mapSvc.drawRoute(map, 'farr', [driverStart, p], '#FFB800', true);
+        this.mapSvc.drawRoute(map, 'farr', [driverStart, p], '#111111', true);
         // Animate driver approaching
         let step = 0;
         const steps = 15;
