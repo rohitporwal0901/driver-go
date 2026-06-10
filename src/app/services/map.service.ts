@@ -141,7 +141,9 @@ export class MapService {
   }
 
   drawRoute(map: L.Map, id: string, points: [number, number][], color = '#000000', dashed = false): L.Polyline {
-    if (this.polylines.has(id)) this.polylines.get(id)!.remove();
+    if (this.polylines.has(id)) {
+        map.removeLayer(this.polylines.get(id)!);
+    }
     
     // Draw white outline/background for the route line
     const outline = L.polyline(points, {
@@ -150,9 +152,7 @@ export class MapService {
       opacity: 1,
       lineJoin: 'round',
       lineCap: 'round',
-    }).addTo(map);
-    // Let's store outline as well if needed, but it will be left on map. We should group them or store to remove.
-    // For now, simplify by just using the black line directly, or keep track of group.
+    });
     
     const line = L.polyline(points, {
       color: color,
@@ -161,14 +161,10 @@ export class MapService {
       dashArray: dashed ? '10, 8' : undefined,
       lineJoin: 'round',
       lineCap: 'round',
-    }).addTo(map);
+    });
     
-    // Store as a feature group so both can be removed
-    const group = L.featureGroup([outline, line]);
-    
-    if (this.polylines.has(id)) {
-        map.removeLayer(this.polylines.get(id)!);
-    }
+    // Store as a feature group so both can be removed properly
+    const group = L.featureGroup([outline, line]).addTo(map);
     
     this.polylines.set(id, group as any);
     return line;

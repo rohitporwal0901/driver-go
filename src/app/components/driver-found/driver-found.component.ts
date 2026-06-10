@@ -101,11 +101,11 @@ import { Driver } from '../../models/ride.models';
     }
     .top-bar h2 { font-family:'Outfit',sans-serif; font-size:18px; font-weight:700; color:var(--text-primary); margin:0; }
 
-    .map-box { height:45dvh; min-height: 300px; position:relative; z-index:1; }
+    .map-box { flex:1; position:relative; z-index:1; }
     .leaflet-map { width:100%; height:100%; }
     .found-sheet {
-      flex:1; background:var(--surface); border-radius:var(--radius-lg) var(--radius-lg) 0 0;
-      padding:var(--spacing-3) var(--spacing-3) max(var(--spacing-4), var(--safe-bottom)); overflow-y:auto;
+      background:var(--surface); border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+      padding:24px 20px max(24px, var(--safe-bottom, 0px));
       box-shadow:var(--shadow-sheet); z-index: 10;
     }
     .sheet-handle { width:32px; height:4px; background:var(--border-color); border-radius:4px; margin:0 auto var(--spacing-3); }

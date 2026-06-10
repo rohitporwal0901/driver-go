@@ -37,126 +37,122 @@ import * as L from 'leaflet';
       </div>
 
       <!-- Map -->
-      <div class="map-box">
+      <div class="map-box" [class.full-screen]="isMapPicking">
         <div id="home-map" class="leaflet-map"></div>
-        <div class="map-gradient"></div>
+        <div class="map-gradient" *ngIf="!isMapPicking"></div>
+        
+        <!-- Center Pin for Picker -->
+        <div class="center-pin" *ngIf="isMapPicking">📍</div>
       </div>
 
       <!-- Search Sheet -->
       <div class="search-sheet">
         <div class="sheet-handle"></div>
+        
         <!-- Trip Input -->
-        <div class="trip-inputs" (click)="openSearch()">
+        <div class="trip-inputs">
           <div class="trip-connector"></div>
           <button class="swap-btn" id="swap-btn" (click)="swap($event)">⇅</button>
 
           <div class="input-row from">
             <div class="dot green-dot"></div>
-            <div class="input-fake">
-              <small>FROM</small>
-              <span [class.placeholder]="!fromCity">{{ fromCity || 'Pickup city / location' }}</span>
+            <div class="search-input-wrap">
+              <input [(ngModel)]="fromQuery" (input)="onFrom()" (focus)="enterSearchMode('from')" placeholder="Pickup location" />
             </div>
           </div>
           <div class="input-row to">
             <div class="dot red-dot"></div>
-            <div class="input-fake">
-              <small>TO</small>
-              <span [class.placeholder]="!toCity">{{ toCity || 'Destination city / location' }}</span>
+            <div class="search-input-wrap">
+              <input [(ngModel)]="toQuery" (input)="onTo()" (focus)="enterSearchMode('to')" placeholder="Drop location" />
             </div>
           </div>
         </div>
 
-        <!-- Car Type Selection -->
-        <div class="section-title">Selecting Car Type</div>
-        <div class="car-types">
-          <button *ngFor="let c of carTypes"
-                  class="car-card" [class.selected]="selectedCar?.id===c.id"
-                  [id]="'car-' + c.id"
-                  (click)="selectCar(c)">
-            <!-- Use real image or fallback to icon if image missing -->
-            <img [src]="'/assets/cars/' + c.id + '.png'" class="car-img" alt="{{c.name}}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
-            <span class="car-icon-fallback" style="display:none">{{ c.icon }}</span>
-            
-            <span class="car-name">{{ c.name }}</span>
-            <span class="car-price" *ngIf="distance">₹{{ getEstimatedFare(c) }}</span>
-            <span class="car-price-placeholder" *ngIf="!distance">--</span>
-          </button>
-        </div>
-
-        <!-- Transmission Selection -->
-        <div class="section-title">Transmission</div>
-        <div class="transmission-options">
-          <button class="trans-btn" [class.active]="transmission === 'manual'" (click)="transmission = 'manual'">
-            ⚙️ Manual
-          </button>
-          <button class="trans-btn" [class.active]="transmission === 'auto'" (click)="transmission = 'auto'">
-            🔄 Automatic
-          </button>
-        </div>
-
-        <!-- Popular Routes -->
-        <div class="section-title">Popular Routes</div>
-        <div class="routes-scroll">
-          <div class="route-chip" *ngFor="let r of popularRoutes" (click)="selectRoute(r)">
-            <span class="route-from">{{ r.from }}</span>
-            <span class="arrow">→</span>
-            <span class="route-to">{{ r.to }}</span>
-            <span class="route-km">~{{ r.km }} km</span>
+        <!-- Search Mode Views -->
+        <ng-container *ngIf="isSearchMode">
+          <div class="quick-actions">
+            <button class="action-chip" (click)="useCurrentLocation()"><span class="icon">🎯</span> Current Location</button>
+            <button class="action-chip" (click)="enableMapPicker()"><span class="icon">🗺️</span> Locate on Map</button>
           </div>
-        </div>
 
-        <button class="btn-find" id="find-drivers-btn"
-                (click)="findDrivers()" [disabled]="!pickupSet || !dropSet">
-          <span *ngIf="!distance">🔍 Find Drivers</span>
-          <span *ngIf="distance" style="display:flex; justify-content:space-between; width:100%; padding: 0 10px;">
-             <span>🔍 Find Drivers</span>
-             <span>{{ distance }} km • ₹{{ fare }}</span>
-          </span>
-        </button>
+          <div class="suggestions-list" *ngIf="suggestions.length && !isSearchingLoc">
+            <div class="sug-item" *ngFor="let s of suggestions" (click)="pickCity(s)">
+              <span class="sug-icon">📍</span>
+              <div>
+                <strong>{{ s.name }}</strong>
+                <small>{{ s.address }}</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="searching-loader" *ngIf="isSearchingLoc">
+            <div class="spinner"></div>
+            <span>Searching...</span>
+          </div>
+        </ng-container>
+
+        <!-- Ride Options (Hidden while searching) -->
+        <ng-container *ngIf="!isSearchMode">
+          <!-- Car Type Selection -->
+          <div class="section-title">Selecting Car Type</div>
+          <div class="car-types">
+            <button *ngFor="let c of carTypes"
+                    class="car-card" [class.selected]="selectedCar?.id===c.id"
+                    [id]="'car-' + c.id"
+                    (click)="selectCar(c)">
+              <img [src]="'/assets/cars/' + c.id + '.png'" class="car-img" alt="{{c.name}}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+              <span class="car-icon-fallback" style="display:none">{{ c.icon }}</span>
+              
+              <span class="car-name">{{ c.name }}</span>
+              <span class="car-price" *ngIf="distance">₹{{ getEstimatedFare(c) }}</span>
+              <span class="car-price-placeholder" *ngIf="!distance">--</span>
+            </button>
+          </div>
+
+          <!-- Transmission Selection -->
+          <div class="section-title">Transmission</div>
+          <div class="transmission-options">
+            <button class="trans-btn" [class.active]="transmission === 'manual'" (click)="transmission = 'manual'">
+              ⚙️ Manual
+            </button>
+            <button class="trans-btn" [class.active]="transmission === 'auto'" (click)="transmission = 'auto'">
+              🔄 Automatic
+            </button>
+          </div>
+
+          <button class="btn-find" id="find-drivers-btn"
+                  (click)="findDrivers()" [disabled]="!pickupSet || !dropSet">
+            <span *ngIf="!distance">🔍 Find Drivers</span>
+            <span *ngIf="distance" style="display:flex; justify-content:space-between; width:100%; padding: 0 10px;">
+               <span>🔍 Find Drivers</span>
+               <span>{{ distance }} km • ₹{{ fare }}</span>
+            </span>
+          </button>
+        </ng-container>
       </div>
     </div>
 
-    <!-- Location Overlay -->
-    <div class="loc-overlay" *ngIf="showSearch">
-      <div class="loc-sheet">
-        <div class="loc-header">
-          <button class="close-btn" (click)="showSearch=false">✕</button>
-          <h3>Trip Details</h3>
-        </div>
+    <!-- Map Picker Overlay UI (Header and Bottom Sheet) -->
+    <div class="map-picker-ui" *ngIf="isMapPicking">
+       <!-- Back button at top -->
+       <div class="picker-header">
+          <button class="back-btn" (click)="cancelMapPicker()">←</button>
+          <span>Select {{ activeField === 'from' ? 'Pickup' : 'Drop' }} Location</span>
+       </div>
 
-        <div class="loc-field">
-          <div class="dot green-dot"></div>
-          <div class="loc-input-wrap">
-            <label>Pickup</label>
-            <input #fromInput [(ngModel)]="fromQuery" (input)="onFrom()"
-                   placeholder="From: Ujjain, Indore..." id="from-input" />
+       <!-- Bottom Sheet -->
+       <div class="picker-bottom-sheet">
+          <div class="picker-address" *ngIf="pickerLoading">
+             <div class="spinner"></div> <span>Fetching address...</span>
           </div>
-        </div>
-        <div class="field-divider"></div>
-        <div class="loc-field">
-          <div class="dot red-dot"></div>
-          <div class="loc-input-wrap">
-            <label>Destination</label>
-            <input #toInput [(ngModel)]="toQuery" (input)="onTo()"
-                   placeholder="To: Indore, Bhopal..." id="to-input" />
+          <div class="picker-address" *ngIf="!pickerLoading">
+             <h3>{{ pickerLocationName }}</h3>
+             <p>{{ pickerAddress }}</p>
           </div>
-        </div>
-
-        <div class="suggestions" *ngIf="suggestions.length">
-          <div class="sug-item" *ngFor="let s of suggestions" (click)="pickCity(s)">
-            <span class="sug-icon">📍</span>
-            <div>
-              <strong>{{ s.name }}</strong>
-              <small>{{ s.address }}</small>
-            </div>
-          </div>
-        </div>
-
-        <button class="btn-done" [disabled]="!pickupSet||!dropSet"
-                (click)="confirmLoc()">
-          Confirm Locations
-        </button>
-      </div>
+          <button class="btn-done" [disabled]="pickerLoading" (click)="confirmMapPick()">
+            Confirm Location
+          </button>
+       </div>
     </div>
   `,
   styles: [`
@@ -192,7 +188,13 @@ import * as L from 'leaflet';
       font-family:'Inter',sans-serif; font-size:9px; font-weight:700; color:#fff;
       display:flex; align-items:center; justify-content:center;
     }
-    .map-box { height:45dvh; min-height: 300px; position:relative; }
+    .map-box { height:45dvh; min-height: 300px; position:relative; transition: all 0.3s; }
+    .map-box.full-screen {
+       height: 100dvh;
+       position: absolute;
+       inset: 0;
+       z-index: 2500;
+    }
     .leaflet-map { width:100%; height:100%; }
     .map-gradient {
       position:absolute; bottom:0; left:0; right:0; height:80px;
@@ -200,6 +202,13 @@ import * as L from 'leaflet';
       z-index: 4;
       pointer-events: none;
     }
+    .center-pin {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%);
+      font-size: 40px; z-index: 3000; pointer-events: none;
+      filter: drop-shadow(0 4px 4px rgba(0,0,0,0.3));
+      animation: bounce 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes bounce { 0% { transform: translate(-50%, -150%); } 100% { transform: translate(-50%, -100%); } }
     .search-sheet {
       flex:1; background:var(--surface); border-radius:var(--radius-lg) var(--radius-lg) 0 0;
       padding:24px 20px max(32px, var(--safe-bottom)); overflow-y:auto;
@@ -209,10 +218,10 @@ import * as L from 'leaflet';
     
     .trip-inputs {
       position: relative;
-      background:var(--bg-color); border-radius:var(--radius-md); padding:16px 20px; cursor:pointer;
+      background:var(--surface); border-radius:var(--radius-md); padding:16px 20px;
       border:1.5px solid var(--border-color); transition:all 0.2s; margin-bottom:24px;
     }
-    .trip-inputs:active { border-color:var(--primary); }
+    .trip-inputs:focus-within { border-color:var(--primary); }
     
     .trip-connector {
       position: absolute; top: 34px; bottom: 34px; left: 14px; width: 1.5px; background: var(--border-color); z-index: 1;
@@ -232,10 +241,21 @@ import * as L from 'leaflet';
     .green-dot { background:var(--success); border: 3px solid #BBF7D0; margin-left: -7px; }
     .red-dot { background:var(--error); border: 3px solid #FECACA; margin-left: -7px; }
     
-    .input-fake { flex:1; display: flex; flex-direction: column; gap: 2px; overflow:hidden; }
-    .input-fake small { font-family:'Inter',sans-serif; font-size:10px; color:var(--text-tertiary); text-transform:uppercase; font-weight:600; letter-spacing:0.5px; }
-    .input-fake span { font-family:'Inter',sans-serif; font-size:15px; font-weight:500; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; width:100%; }
-    .input-fake .placeholder { color:var(--text-tertiary); }
+    .search-input-wrap { flex:1; }
+    .search-input-wrap input {
+      width:100%; border:none; outline:none; font-family:'Inter',sans-serif;
+      font-size:15px; font-weight:500; color:var(--text-primary); background:transparent;
+      padding: 8px 0;
+    }
+    .search-input-wrap input::placeholder { color:var(--text-tertiary); font-weight: 400; }
+
+    .quick-actions { display:flex; gap:12px; margin-bottom: 16px; }
+    .action-chip { 
+      flex: 1; padding: 12px; background: var(--bg-color); border: 1.5px solid var(--border-color);
+      border-radius: var(--radius-sm); font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+      color: var(--text-primary); display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;
+    }
+    .action-chip:active { border-color: var(--primary); background: #FFFBEB; }
 
     .section-title {
       font-family:'Outfit',sans-serif; font-size:16px; font-weight:800;
@@ -299,58 +319,41 @@ import * as L from 'leaflet';
     .btn-find:disabled { background: #FCD34D; color: rgba(255,255,255,0.8); cursor:not-allowed; box-shadow:none; }
     .btn-find:not(:disabled):active { transform:scale(0.98); box-shadow: 0 4px 12px rgba(255, 184, 0, 0.2); }
 
-    /* Overlay */
-    .loc-overlay {
-      position:fixed; inset:0; z-index:200;
-      background:rgba(0,0,0,0.5); backdrop-filter:blur(4px);
-      display:flex; align-items:flex-end;
-    }
-    .loc-sheet {
-      width:100%; background:var(--surface); border-radius:var(--radius-lg) var(--radius-lg) 0 0;
-      padding:24px 20px max(48px, var(--safe-bottom)); max-height:82dvh; overflow-y:auto;
-      animation:slideUp 0.35s cubic-bezier(0.34,1.56,0.64,1);
-    }
-    @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
-    .loc-header { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
-    .close-btn {
-      background:var(--bg-color); border:none; border-radius:12px; width:36px; height:36px;
-      display:flex; align-items:center; justify-content:center; cursor:pointer;
-      font-size:14px; color:var(--text-primary);
-    }
-    .loc-header h3 { font-family:'Outfit',sans-serif; font-size:20px; font-weight:700; color:var(--text-primary); margin:0; }
-    .loc-field { display:flex; align-items:center; gap:12px; padding:10px 0; }
-    .loc-input-wrap { flex:1; background:var(--bg-color); border-radius:var(--radius-sm); padding:10px 14px; border:1px solid var(--border-color); }
-    .loc-input-wrap:focus-within { border-color:var(--primary); }
-    .loc-input-wrap label { display:block; font-family:'Inter',sans-serif; font-size:11px; color:var(--text-tertiary); text-transform:uppercase; margin-bottom:3px; }
-    .loc-input-wrap input {
-      width:100%; border:none; outline:none; font-family:'Inter',sans-serif;
-      font-size:16px; color:var(--text-primary); background:transparent;
-    }
-    .loc-input-wrap input::placeholder { color:var(--text-tertiary); }
-    .field-divider { height:2px; background:var(--border-color); margin:4px 0 4px 24px; border-radius:2px; width: 4px; display: flex; flex-direction: column; gap: 4px; }
-    .suggestions { margin-top:20px; border-radius:var(--radius-md); overflow:hidden; border:1px solid var(--border-color); }
+    .suggestions-list { background:var(--surface); }
     .sug-item {
-      display:flex; align-items:center; gap:12px; padding:14px 16px;
-      cursor:pointer; border-bottom:1px solid var(--border-color); transition:background 0.15s; background:var(--surface);
+      display:flex; align-items:center; gap:16px; padding:16px;
+      cursor:pointer; border-bottom:1px solid var(--border-color);
     }
-    .sug-item:last-child{ border-bottom:none; }
-    .sug-item:hover{ background:#FFFBEB; }
-    .sug-icon{ font-size:16px; }
-    .sug-item strong{ display:block; font-family:'Inter',sans-serif; font-size:14px; font-weight:600; color:var(--text-primary); }
-    .sug-item small{ font-family:'Inter',sans-serif; font-size:12px; color:var(--text-secondary); }
-    .btn-done {
-      width:100%; margin-top:24px; padding:16px; height: 56px;
-      background:var(--primary-gradient);
-      border:none; border-radius:var(--radius-md); font-family:'Outfit',sans-serif;
-      font-size:18px; font-weight:700; color:#fff; cursor:pointer;
-      box-shadow:0 8px 24px rgba(255,184,0,0.35); transition:all 0.2s;
+    .sug-item:hover { background: var(--bg-color); }
+    .sug-icon { font-size:20px; color:var(--text-secondary); }
+    .sug-item strong { display:block; font-family:'Inter',sans-serif; font-size:15px; font-weight:500; color:var(--text-primary); }
+    .sug-item small { font-family:'Inter',sans-serif; font-size:13px; color:var(--text-secondary); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+
+    .searching-loader { display:flex; align-items:center; justify-content:center; gap:12px; padding:24px; color:var(--text-secondary); font-family:'Inter',sans-serif; }
+
+    /* Map Picker Overlay */
+    .map-picker-ui { z-index: 3000; }
+    .picker-header {
+      position: absolute; top: calc(16px + var(--safe-top, 0px)); left: 16px; right: 16px;
+      background: var(--surface); border-radius: var(--radius-md); padding: 12px 16px;
+      display: flex; align-items: center; gap: 16px; box-shadow: var(--shadow-md); z-index: 3000;
+      font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 600;
     }
-    .btn-done:active { transform:scale(0.98); box-shadow:0 4px 12px rgba(255,184,0,0.2); }
-    .btn-done:disabled{ opacity:0.6; cursor:not-allowed; box-shadow:none; }
+    .picker-bottom-sheet {
+      position: absolute; bottom: 0; left: 0; right: 0; z-index: 3000;
+      background: var(--surface); border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      padding: 24px 20px max(24px, var(--safe-bottom, 0px)); box-shadow: 0 -4px 24px rgba(0,0,0,0.1);
+      animation: slideUp 0.3s ease-out;
+    }
+    .picker-address { margin-bottom: 20px; display: flex; flex-direction: column; gap: 4px; min-height: 60px; justify-content: center; }
+    .picker-address h3 { font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 700; margin: 0; color: var(--text-primary); }
+    .picker-address p { font-family: 'Inter', sans-serif; font-size: 14px; color: var(--text-secondary); margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .picker-address .spinner { width: 20px; height: 20px; border: 3px solid #FDE68A; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
   `]
 })
 export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   showSearch = false;
+  isSearchMode = false;
   fromQuery = '';
   toQuery = '';
   fromCity = '';
@@ -366,18 +369,21 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   distance: number | null = null;
   fare: number | null = null;
   loadingLocation = false;
+  isSearchingLoc = false;
+  
+  // Map Picker State
+  isMapPicking = false;
+  pickerLoading = false;
+  pickerLocationName = '';
+  pickerAddress = '';
+  pickerLat = 0;
+  pickerLng = 0;
+  private mapMoveEndHandler = () => this.onMapMoveEnd();
+
   private searchSubject = new Subject<{ field: 'from' | 'to', query: string }>();
 
-  popularRoutes = [
-    { from: 'Ujjain', to: 'Indore', km: 55 },
-    { from: 'Ujjain', to: 'Bhopal', km: 185 },
-    { from: 'Indore', to: 'Mumbai', km: 570 },
-    { from: 'Bhopal', to: 'Jabalpur', km: 290 },
-    { from: 'Indore', to: 'Jaipur', km: 520 },
-  ];
-
-  private pickup?: Location;
-  private drop?: Location;
+  public pickup?: Location;
+  public drop?: Location;
 
   constructor(
     private router: Router,
@@ -443,42 +449,147 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   cancelSearch() {
-    this.showSearch = false;
+    this.isSearchMode = false;
   }
 
   goToNotifications() {
     this.router.navigate(['/notifications']);
   }
 
-  openSearch(): void {
-    this.showSearch = true;
-    this.suggestions = this.mockData.POPULAR_CITIES.slice(0, 8); // Show default cities initially
-    this.activeField = this.pickupSet ? 'to' : 'from';
+  enterSearchMode(field: 'from' | 'to'): void {
+    this.isSearchMode = true;
+    this.activeField = field;
+    if (field === 'from' && this.fromQuery.length < 2) this.suggestions = [];
+    if (field === 'to' && this.toQuery.length < 2) this.suggestions = [];
   }
 
   onFrom(): void {
+    this.isSearchMode = true;
     this.activeField = 'from';
     this.searchSubject.next({ field: 'from', query: this.fromQuery });
   }
 
   onTo(): void {
+    this.isSearchMode = true;
     this.activeField = 'to';
     this.searchSubject.next({ field: 'to', query: this.toQuery });
   }
 
+  async useCurrentLocation() {
+    this.isSearchMode = false;
+    
+    // Attempt to get fresh location or fallback to pickup if set
+    this.loadingLocation = true;
+    try {
+      const position = await this.mapSvc.getCurrentLocation();
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+      const geoInfo = await this.mapSvc.reverseGeocode(lat, lng);
+      
+      if (geoInfo) {
+        const loc: Location = {
+          lat, lng,
+          address: geoInfo.display_name,
+          name: geoInfo.display_name.split(',')[0] || 'Current Location'
+        };
+        await this.pickCity(loc);
+      }
+    } catch(e) {
+      if (this.pickup) {
+        await this.pickCity(this.pickup);
+      }
+    } finally {
+      this.loadingLocation = false;
+    }
+  }
+
+  // Map Picker Logic
+  enableMapPicker() {
+    this.isSearchMode = false;
+    this.isMapPicking = true;
+    
+    setTimeout(() => {
+       const map = this.mapSvc.getMap('home-map');
+       if (map) {
+         map.invalidateSize();
+         // Pan to current location or default
+         if (this.pickup) map.panTo([this.pickup.lat, this.pickup.lng]);
+         
+         map.on('moveend', this.mapMoveEndHandler);
+         this.onMapMoveEnd(); // trigger once for current center
+       }
+    }, 100);
+  }
+
+  cancelMapPicker() {
+    this.isMapPicking = false;
+    this.isSearchMode = true; 
+    const map = this.mapSvc.getMap('home-map');
+    if (map) {
+       map.off('moveend', this.mapMoveEndHandler);
+       setTimeout(() => map.invalidateSize(), 100);
+    }
+  }
+
+  async onMapMoveEnd() {
+    if (!this.isMapPicking) return;
+    const map = this.mapSvc.getMap('home-map');
+    if (!map) return;
+    
+    const center = map.getCenter();
+    this.pickerLat = center.lat;
+    this.pickerLng = center.lng;
+    
+    this.pickerLoading = true;
+    const geoInfo = await this.mapSvc.reverseGeocode(center.lat, center.lng);
+    this.pickerLoading = false;
+    
+    if (geoInfo) {
+      this.pickerLocationName = geoInfo.display_name.split(',')[0] || 'Selected Location';
+      this.pickerAddress = geoInfo.display_name;
+    } else {
+      this.pickerLocationName = 'Unknown Location';
+      this.pickerAddress = 'Move map to fetch address';
+    }
+  }
+
+  async confirmMapPick() {
+     const loc: Location = {
+       lat: this.pickerLat,
+       lng: this.pickerLng,
+       name: this.pickerLocationName,
+       address: this.pickerAddress
+     };
+     
+     this.isMapPicking = false;
+     this.isSearchMode = false;
+     const map = this.mapSvc.getMap('home-map');
+     if (map) {
+       map.off('moveend', this.mapMoveEndHandler);
+       setTimeout(() => map.invalidateSize(), 100);
+     }
+     
+     await this.pickCity(loc);
+  }
+
   async fetchPlaces(query: string) {
     if (!query || query.length < 2) {
-      this.suggestions = this.mockData.filterCities(query);
+      this.suggestions = [];
+      this.isSearchingLoc = false;
       return;
     }
     
-    // 1. Get local suggestions
-    const local = this.mockData.filterCities(query);
+    this.isSearchingLoc = true;
     
-    // 2. Fetch remote from Nominatim for real places
+    // Fetch remote from Nominatim for real places
     try {
       const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=5`;
-      const res = await fetch(url);
+      const res = await fetch(url, {
+        headers: {
+          'Accept-Language': 'en-US,en;q=0.9',
+          'User-Agent': 'DriveGoApp/1.0 (rohitporwal0901@gmail.com)' // Added User-Agent for Nominatim
+        }
+      });
       const data = await res.json();
       
       const remote = data.map((item: any) => ({
@@ -488,12 +599,11 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
         address: item.display_name
       }));
       
-      // Filter out remote duplicates that have the same name as local
-      const remoteFiltered = remote.filter((r: any) => !local.find(l => (l.name || '').toLowerCase() === (r.name || '').toLowerCase()));
-      
-      this.suggestions = [...local, ...remoteFiltered].slice(0, 8);
+      this.suggestions = remote.slice(0, 8);
     } catch (e) {
-      this.suggestions = local;
+      this.suggestions = [];
+    } finally {
+      this.isSearchingLoc = false;
     }
   }
 
@@ -503,28 +613,30 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.activeField === 'from') {
       this.pickup = finalLoc; 
       this.fromQuery = finalLoc.address || finalLoc.name || '';
-      this.fromCity = this.fromQuery; 
+      this.fromCity = finalLoc.name || this.fromQuery; 
       this.pickupSet = true;
       this.rideState.setPickup(finalLoc);
-      this.activeField = 'to';
+      
+      // If drop is not set, move to 'to'. If drop is set, exit search mode.
+      if (!this.dropSet) {
+         this.activeField = 'to';
+         this.suggestions = []; // Reset suggestions for 'to'
+      } else {
+         this.isSearchMode = false;
+         await this.calculateRoute();
+      }
     } else {
       this.drop = finalLoc; 
       this.toQuery = finalLoc.address || finalLoc.name || '';
-      this.toCity = this.toQuery; 
+      this.toCity = finalLoc.name || this.toQuery; 
       this.dropSet = true;
       this.rideState.setDrop(finalLoc);
-    }
-    this.suggestions = [];
-
-    if (this.pickup && this.drop) {
-      await this.calculateRoute();
-    }
-  }
-
-  async confirmLoc(): Promise<void> { 
-    this.showSearch = false; 
-    if (this.pickup && this.drop) {
-      await this.calculateRoute();
+      
+      // Close search mode after picking drop
+      this.isSearchMode = false;
+      if (this.pickup && this.drop) {
+        await this.calculateRoute();
+      }
     }
   }
 
@@ -560,15 +672,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async selectRoute(r: { from: string; to: string; km: number }): Promise<void> {
-    const from = this.mockData.POPULAR_CITIES.find(c => c.name === r.from);
-    const to = this.mockData.POPULAR_CITIES.find(c => c.name === r.to);
-    if (from && to) {
-      this.pickup = from; this.drop = to;
-      this.fromCity = from.name || ''; this.toCity = to.name || '';
-      this.pickupSet = true; this.dropSet = true;
-      this.rideState.setPickup(from); this.rideState.setDrop(to);
-      await this.calculateRoute();
-    }
+    // Deprecated: Popular Routes were removed from UI.
   }
 
   async calculateRoute() {

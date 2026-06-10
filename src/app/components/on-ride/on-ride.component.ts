@@ -249,7 +249,7 @@ export class OnRideComponent implements AfterViewInit, OnDestroy {
 
     this.navTimeout = setTimeout(() => {
       this.rideState.completeTrip();
-      this.router.navigate(['/ride-completed']);
+      this.router.navigate(['/payment']);
     }, 20000);
   }
 
@@ -264,6 +264,6 @@ export class OnRideComponent implements AfterViewInit, OnDestroy {
 
   endTrip(): void {
     this.rideState.completeTrip();
-    this.router.navigate(['/ride-completed']);
+    this.router.navigate(['/payment']);
   }
 }

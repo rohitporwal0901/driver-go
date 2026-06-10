@@ -58,6 +58,11 @@ export const routes: Routes = [
       import('./components/ride-completed/ride-completed.component').then(m => m.RideCompletedComponent),
   },
   {
+    path: 'payment',
+    loadComponent: () =>
+      import('./components/payment/payment.component').then(m => m.PaymentComponent),
+  },
+  {
     path: 'notifications',
     loadComponent: () =>
       import('./components/notifications/notifications.component').then(m => m.NotificationsComponent),
