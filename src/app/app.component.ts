@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { NotificationService } from './services/notification/notification.service';
 
 @Component({
   selector: 'app-root',
@@ -14,4 +15,10 @@ import { RouterOutlet } from '@angular/router';
     }
   `]
 })
-export class AppComponent {}
+export class AppComponent {
+  private notificationService = inject(NotificationService);
+
+  constructor() {
+    this.notificationService.initPush();
+  }
+}

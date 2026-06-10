@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RideStateService } from '../../services/ride-state.service';
 import { MapService } from '../../services/map.service';
+import { RideService } from '../../services/ride/ride.service';
 import { Driver } from '../../models/ride.models';
 
 @Component({
@@ -226,7 +227,12 @@ export class ConfirmRideComponent implements AfterViewInit, OnDestroy {
   notes = '';
   paymentMethods = ['Cash', 'UPI', 'Card', 'Wallet'];
 
-  constructor(public router: Router, private rideState: RideStateService, private mapSvc: MapService) {}
+  constructor(
+    public router: Router, 
+    private rideState: RideStateService, 
+    private mapSvc: MapService,
+    private rideService: RideService
+  ) {}
 
   ngAfterViewInit(): void {
     this.driver = this.rideState.selectedDriver();
@@ -262,8 +268,27 @@ export class ConfirmRideComponent implements AfterViewInit, OnDestroy {
     this.rideState.setPaymentMethod(this.paymentMethod);
   }
 
-  confirm(): void {
-    this.rideState.setStatus('searching');
-    this.router.navigate(['/searching-driver']);
+  async confirm(): Promise<void> {
+    const pLat = this.pickup?.lat || 23.1793;
+    const pLng = this.pickup?.lng || 75.7849;
+    const dLat = this.drop?.lat || 22.7196;
+    const dLng = this.drop?.lng || 75.8577;
+    const pAddr = this.pickup?.address || this.pickup?.name || 'Udaipur, Rajasthan';
+    const dAddr = this.drop?.address || this.drop?.name || 'Indore, Madhya Pradesh';
+
+    try {
+      const btn = document.getElementById('confirm-booking-btn');
+      if (btn) btn.innerHTML = '<span class="spinner" style="width:20px;height:20px;border:3px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;display:inline-block;animation:spin 0.75s linear infinite;"></span>';
+      
+      const rideId = await this.rideService.requestRide(pLat, pLng, dLat, dLng, pAddr, dAddr);
+      
+      this.rideState.setStatus('searching');
+      // Store ride ID in state if needed
+      this.router.navigate(['/searching-driver']);
+    } catch (e: any) {
+      alert('Error requesting ride: ' + e.message);
+      const btn = document.getElementById('confirm-booking-btn');
+      if (btn) btn.innerHTML = 'Confirm & Book Driver';
+    }
   }
 }

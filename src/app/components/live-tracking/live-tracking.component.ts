@@ -1,8 +1,9 @@
-import { Component, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, AfterViewInit, OnDestroy, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RideStateService } from '../../services/ride-state.service';
 import { MapService } from '../../services/map.service';
+import { RideService } from '../../services/ride/ride.service';
 import { Driver } from '../../models/ride.models';
 
 @Component({
@@ -39,7 +40,7 @@ import { Driver } from '../../models/ride.models';
 
         <div class="otp-box">
           <span class="otp-label">Share OTP to start ride</span>
-          <div class="otp-code">5 9 2 4</div>
+          <div class="otp-code">{{ currentRide?.otp || '----' }}</div>
         </div>
 
         <div class="driver-row">
@@ -73,27 +74,6 @@ import { Driver } from '../../models/ride.models';
           <button class="act-btn"><span class="icon">📞</span> Call</button>
           <button class="act-btn"><span class="icon">💬</span> Chat</button>
           <button class="act-btn danger">Cancel</button>
-        </div>
-
-        <button class="btn-start" id="start-trip-btn" (click)="startTrip()" [disabled]="etaMin > 0">
-          {{ etaMin > 0 ? 'Wait for Driver' : 'Enter OTP to Start Trip' }}
-        </button>
-      </div>
-
-      <!-- OTP Verification Sheet Overlay -->
-      <div class="otp-overlay" *ngIf="showOtpSheet">
-        <div class="otp-sheet-content">
-          <div class="sheet-handle"></div>
-          <h3>Verify OTP</h3>
-          <p>Enter the 4-digit OTP shown above (5924) to simulate driver verification.</p>
-          <div class="otp-inputs">
-            <input type="text" maxlength="1" #otp1 (keyup)="onOtpInput(1, $event, otp2, null)" />
-            <input type="text" maxlength="1" #otp2 (keyup)="onOtpInput(2, $event, otp3, otp1)" />
-            <input type="text" maxlength="1" #otp3 (keyup)="onOtpInput(3, $event, otp4, otp2)" />
-            <input type="text" maxlength="1" #otp4 (keyup)="onOtpInput(4, $event, null, otp3)" />
-          </div>
-          <button class="btn-start" [disabled]="!isOtpValid()" (click)="verifyAndStart()">Verify & Start Trip</button>
-          <button class="btn-cancel" (click)="showOtpSheet = false">Cancel</button>
         </div>
       </div>
     </div>
@@ -228,7 +208,7 @@ import { Driver } from '../../models/ride.models';
     .btn-cancel:active { color:var(--text-primary); }
   `]
 })
-export class LiveTrackingComponent implements AfterViewInit, OnDestroy {
+export class LiveTrackingComponent implements OnInit, AfterViewInit, OnDestroy {
   driver?: Driver;
   pickup?: any;
   drop?: any;
@@ -236,16 +216,26 @@ export class LiveTrackingComponent implements AfterViewInit, OnDestroy {
   arrivalProgress = 0;
   statusLabel = 'Driver En Route';
   statusEmoji = '🚗';
-  showOtpSheet = false;
-  otpValues = ['', '', '', ''];
+  currentRide: any = null;
 
   private moveInterval?: ReturnType<typeof setInterval>;
   private etaInterval?: ReturnType<typeof setInterval>;
-  private navTimeout?: ReturnType<typeof setTimeout>;
   private routePoints: [number, number][] = [];
   private routeIdx = 0;
 
+  private rideService = inject(RideService);
+
   constructor(public router: Router, private rideState: RideStateService, private mapSvc: MapService) {}
+
+  ngOnInit() {
+    this.rideService.currentRide$.subscribe(ride => {
+      this.currentRide = ride;
+      if (ride?.status === 'started') {
+        this.rideState.startTrip();
+        this.router.navigate(['/on-ride']);
+      }
+    });
+  }
 
   ngAfterViewInit(): void {
     this.driver = this.rideState.selectedDriver();
@@ -317,31 +307,5 @@ export class LiveTrackingComponent implements AfterViewInit, OnDestroy {
     clearInterval(this.moveInterval);
     clearInterval(this.etaInterval);
     this.mapSvc.removeMap('track-map');
-  }
-
-  startTrip(): void {
-    this.showOtpSheet = true;
-  }
-
-  onOtpInput(index: number, event: any, nextInput: any, prevInput: any) {
-    const value = event.target.value;
-    this.otpValues[index - 1] = value;
-    
-    if (value && nextInput) {
-      nextInput.focus();
-    } else if (!value && event.key === 'Backspace' && prevInput) {
-      prevInput.focus();
-    }
-  }
-
-  isOtpValid(): boolean {
-    return this.otpValues.join('') === '5924';
-  }
-
-  verifyAndStart(): void {
-    if (this.isOtpValid()) {
-      this.rideState.startTrip();
-      this.router.navigate(['/on-ride']);
-    }
   }
 }

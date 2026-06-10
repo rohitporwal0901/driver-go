@@ -23,6 +23,21 @@ export const routes: Routes = [
       import('./components/home/home.component').then(m => m.HomeComponent),
   },
   {
+    path: 'driver-home',
+    loadComponent: () =>
+      import('./components/driver-home/driver-home.component').then(m => m.DriverHomeComponent),
+  },
+  {
+    path: 'incoming-ride',
+    loadComponent: () =>
+      import('./components/incoming-ride/incoming-ride.component').then(m => m.IncomingRideComponent),
+  },
+  {
+    path: 'driver-tracking/:rideId',
+    loadComponent: () =>
+      import('./components/driver-tracking/driver-tracking.component').then(m => m.DriverTrackingComponent),
+  },
+  {
     path: 'ride-options',
     loadComponent: () =>
       import('./components/ride-options/ride-options.component').then(m => m.RideOptionsComponent),

@@ -1,8 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
+import { AuthService } from '../../services/auth/auth.service';
 @Component({
   selector: 'app-auth',
   standalone: true,
@@ -55,6 +55,7 @@ import { FormsModule } from '@angular/forms';
               <a href="#" class="forgot">Forgot Password?</a>
             </div>
 
+            <div *ngIf="errorMessage" class="error-msg">{{ errorMessage }}</div>
             <button type="submit" class="btn-primary" [class.loading]="isLoading" id="sign-in-btn">
               <span *ngIf="!isLoading">Sign In</span>
               <span *ngIf="isLoading" class="spinner"></span>
@@ -110,6 +111,21 @@ import { FormsModule } from '@angular/forms';
                        placeholder="Full Name" id="signup-name" />
               </div>
             </div>
+
+
+            <!-- Role Selector -->
+            <div class="field role-selector">
+              <label>Join As</label>
+              <div class="role-options">
+                <button type="button" class="role-btn" [class.active]="signupRole === 'rider'" (click)="signupRole = 'rider'">
+                  <span class="role-icon">👤</span> Rider
+                </button>
+                <button type="button" class="role-btn" [class.active]="signupRole === 'driver'" (click)="signupRole = 'driver'">
+                  <span class="role-icon">🚗</span> Driver
+                </button>
+              </div>
+            </div>
+
             <div class="field">
               <div class="input-box">
                 <span class="inp-icon">📧</span>
@@ -135,6 +151,7 @@ import { FormsModule } from '@angular/forms';
               </div>
             </div>
 
+            <div *ngIf="errorMessage" class="error-msg">{{ errorMessage }}</div>
             <button type="submit" class="btn-primary" [class.loading]="isLoading" id="sign-up-btn">
               <span *ngIf="!isLoading">Sign Up</span>
               <span *ngIf="isLoading" class="spinner"></span>
@@ -378,6 +395,49 @@ import { FormsModule } from '@angular/forms';
       font-weight: 700;
       cursor: pointer;
     }
+    
+    /* ---- Role Selector ---- */
+    .role-options {
+      display: flex;
+      gap: 12px;
+    }
+    .role-btn {
+      flex: 1;
+      background: var(--surface);
+      border: 1.5px solid var(--border-color);
+      padding: 12px;
+      border-radius: var(--radius-md);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .role-btn.active {
+      border-color: var(--primary);
+      background: rgba(var(--primary-rgb), 0.1);
+      color: var(--primary);
+    }
+    .role-icon {
+      font-size: 18px;
+    }
+
+    /* ---- Error Message ---- */
+    .error-msg {
+      color: var(--danger, #ff4d4f);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      margin-bottom: 12px;
+      text-align: center;
+      background: rgba(255, 77, 79, 0.1);
+      padding: 8px;
+      border-radius: var(--radius-sm);
+    }
 
     /* ---- Spinner ---- */
     .spinner {
@@ -400,24 +460,58 @@ export class AuthComponent {
   signupEmail = '';
   signupPassword = '';
   confirmPassword = '';
+  signupRole: 'rider' | 'driver' = 'rider';
   showPwd = false;
   isLoading = false;
+  errorMessage = '';
+
+  private authService = inject(AuthService);
 
   constructor(private router: Router) { }
 
-  handleLogin(): void {
+  async handleLogin(): Promise<void> {
+    if (!this.loginEmail || !this.loginPassword) {
+      this.errorMessage = 'Please enter email and password';
+      return;
+    }
     this.isLoading = true;
-    setTimeout(() => {
+    this.errorMessage = '';
+    try {
+      const profile = await this.authService.login(this.loginEmail, this.loginPassword);
+      if (profile?.role === 'driver') {
+        this.router.navigate(['/driver-home']); // We will create this later
+      } else {
+        this.router.navigate(['/home']);
+      }
+    } catch (error: any) {
+      this.errorMessage = error.message;
+    } finally {
       this.isLoading = false;
-      this.router.navigate(['/home']);
-    }, 1500);
+    }
   }
 
-  handleSignup(): void {
+  async handleSignup(): Promise<void> {
+    if (!this.signupEmail || !this.signupPassword || !this.signupName) {
+      this.errorMessage = 'Please fill all fields';
+      return;
+    }
+    if (this.signupPassword !== this.confirmPassword) {
+      this.errorMessage = 'Passwords do not match';
+      return;
+    }
     this.isLoading = true;
-    setTimeout(() => {
+    this.errorMessage = '';
+    try {
+      await this.authService.signup(this.signupEmail, this.signupPassword, this.signupName, this.signupRole);
+      if (this.signupRole === 'driver') {
+        this.router.navigate(['/driver-home']);
+      } else {
+        this.router.navigate(['/home']);
+      }
+    } catch (error: any) {
+      this.errorMessage = error.message;
+    } finally {
       this.isLoading = false;
-      this.router.navigate(['/home']);
-    }, 1500);
+    }
   }
 }
