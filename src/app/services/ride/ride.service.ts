@@ -13,8 +13,10 @@ export interface RideRequest {
   dropLng: number;
   pickupAddress: string;
   dropAddress: string;
-  status: 'searching' | 'accepted' | 'started' | 'completed' | 'cancelled';
+  status: 'searching' | 'accepted' | 'started' | 'completed' | 'cancelled' | 'rejected';
   driverId?: string;
+  requestedDriverId?: string;
+  declinedBy?: string[];
   otp?: string;
   createdAt: number;
 }
@@ -33,7 +35,7 @@ export class RideService {
 
   constructor() { }
 
-  async requestRide(pickupLat: number, pickupLng: number, dropLat: number, dropLng: number, pickupAddr: string, dropAddr: string): Promise<string> {
+  async requestRide(pickupLat: number, pickupLng: number, dropLat: number, dropLng: number, pickupAddr: string, dropAddr: string, requestedDriverId?: string): Promise<string> {
     const profile = await this.getCurrentProfile();
     if (!profile) throw new Error('User not authenticated');
 
@@ -48,6 +50,10 @@ export class RideService {
       status: 'searching',
       createdAt: Date.now()
     };
+
+    if (requestedDriverId) {
+      rideData.requestedDriverId = requestedDriverId;
+    }
 
     const docRef = await addDoc(collection(this.firestore, 'rides'), rideData);
     rideData.id = docRef.id;

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { NotificationService } from '../../services/notification/notification.service';
 import { RideService, RideRequest } from '../../services/ride/ride.service';
-import { Firestore, doc, updateDoc } from '@angular/fire/firestore';
+import { Firestore, doc, updateDoc, arrayUnion } from '@angular/fire/firestore';
 import { AuthService } from '../../services/auth/auth.service';
 
 @Component({
@@ -18,13 +18,13 @@ import { AuthService } from '../../services/auth/auth.service';
 
       <div class="bottom-sheet">
         <!-- Timer Progress Bar -->
-        <!-- <div class="timer-bar">
+        <div class="timer-bar">
           <div class="timer-progress"></div>
-        </div> -->
+        </div>
 
         <div class="card-content">
           <!-- Header: Vehicle & Fare -->
-          <!-- <div class="sheet-header">
+          <div class="sheet-header">
             <div class="vehicle-info">
               <div class="vehicle-icon">🏍️</div>
               <div class="vehicle-text">
@@ -36,7 +36,7 @@ import { AuthService } from '../../services/auth/auth.service';
               <span class="fare-est">₹ 45</span>
               <span class="fare-label">Estimated</span>
             </div>
-          </div> -->
+          </div>
 
           <div class="divider"></div>
 
@@ -426,8 +426,31 @@ export class IncomingRideComponent implements OnInit {
     return 'neutral';
   }
 
-  decline() {
+  async decline() {
     this.audio.pause();
+
+    if (this.rideData?.rideId) {
+      try {
+        const profile: any = await this.getCurrentProfile();
+        if (profile?.uid) {
+          const docRef = doc(this.firestore, `rides/${this.rideData.rideId}`);
+          
+          if (this.rideData.requestedDriverId === profile.uid) {
+            await updateDoc(docRef, {
+              status: 'rejected',
+              declinedBy: arrayUnion(profile.uid)
+            });
+          } else {
+            await updateDoc(docRef, {
+              declinedBy: arrayUnion(profile.uid)
+            });
+          }
+        }
+      } catch (e) {
+        console.error('Error updating declined status:', e);
+      }
+    }
+
     setTimeout(() => {
       this.router.navigate(['/driver-home']);
     }, 200);

@@ -280,7 +280,7 @@ export class ConfirmRideComponent implements AfterViewInit, OnDestroy {
       const btn = document.getElementById('confirm-booking-btn');
       if (btn) btn.innerHTML = '<span class="spinner" style="width:20px;height:20px;border:3px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;display:inline-block;animation:spin 0.75s linear infinite;"></span>';
       
-      const rideId = await this.rideService.requestRide(pLat, pLng, dLat, dLng, pAddr, dAddr);
+      const rideId = await this.rideService.requestRide(pLat, pLng, dLat, dLng, pAddr, dAddr, this.driver?.id);
       
       this.rideState.setStatus('searching');
       // Store ride ID in state if needed

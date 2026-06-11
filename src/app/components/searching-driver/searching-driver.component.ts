@@ -43,10 +43,28 @@ import { Subscription } from 'rxjs';
         </div>
         <button class="btn-cancel" id="cancel-btn" (click)="cancel()">Cancel</button>
       </div>
+
+      <!-- Rejection Bottom Sheet Overlay -->
+      <div class="overlay" *ngIf="showRejectionPopup"></div>
+      <div class="rejection-sheet" [class.show]="showRejectionPopup">
+        <div class="sheet-handle"></div>
+        <div class="reject-content">
+          <div class="warning-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+          </div>
+          <h3>Driver Unavailable</h3>
+          <p>The requested driver is currently busy or declined the ride. Please select another driver.</p>
+          <button class="btn-primary" (click)="handleRejection()">Try Another Driver</button>
+        </div>
+      </div>
     </div>
   `,
   styles: [`
-    .search-screen { width:100%; height:100vh; height:100dvh; display:flex; flex-direction:column; background-color:var(--bg-color); }
+    .search-screen { width:100%; height:100vh; height:100dvh; display:flex; flex-direction:column; background-color:var(--bg-color); position:relative; overflow:hidden; }
     
     .top-bar {
       position:absolute; top:calc(16px + var(--safe-top)); left:16px; right:16px; z-index:2000;
@@ -97,12 +115,51 @@ import { Subscription } from 'rxjs';
       font-weight:600; color:var(--text-primary); cursor:pointer; transition:all 0.2s;
     }
     .btn-cancel:hover { border-color:var(--error); color:var(--error); background:#FEF2F2; }
+
+    /* Rejection Popup Styles */
+    .overlay {
+      position: absolute; inset: 0; background: rgba(17,24,39,0.5); z-index: 3000;
+      animation: fadeIn 0.2s ease-out forwards;
+    }
+    .rejection-sheet {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: #FFFFFF; border-radius: 24px 24px 0 0;
+      padding: 16px 24px max(32px, var(--safe-bottom));
+      box-shadow: 0 -8px 32px rgba(0,0,0,0.15);
+      z-index: 3001;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .rejection-sheet.show {
+      transform: translateY(0);
+    }
+    .reject-content {
+      display: flex; flex-direction: column; align-items: center; text-align: center; margin-top: 16px;
+    }
+    .warning-icon {
+      width: 64px; height: 64px; background: #FEF3C7; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; margin-bottom: 16px;
+    }
+    .reject-content h3 { font-family:'Outfit',sans-serif; font-size:22px; font-weight:800; color:#1E293B; margin: 0 0 8px; }
+    .reject-content p { font-family:'Inter',sans-serif; font-size:14px; font-weight:500; color:#64748B; margin: 0 0 24px; line-height:1.5; }
+    
+    .btn-primary {
+      width: 100%; padding: 16px; background: var(--primary-gradient); border: none;
+      border-radius: var(--radius-md); font-family:'Outfit',sans-serif; font-size: 16px;
+      font-weight: 800; color: #FFF; cursor: pointer;
+      box-shadow: 0 8px 24px rgba(255, 184, 0, 0.3); transition: all 0.2s;
+    }
+    .btn-primary:active { transform: scale(0.98); box-shadow: 0 4px 12px rgba(255, 184, 0, 0.15); }
+    
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   `]
 })
 export class SearchingDriverComponent implements AfterViewInit, OnDestroy {
   progress = 0;
   driverEmoji = '🚗';
   statusMsg = 'Connecting to driver...';
+  showRejectionPopup = false;
+  
   private statusMsgs = [
     'Connecting to driver...',
     'Waiting for confirmation...',
@@ -163,7 +220,7 @@ export class SearchingDriverComponent implements AfterViewInit, OnDestroy {
     };
     updateMsg();
 
-    // REAL FIREBASE LOGIC: Listen for ride acceptance
+    // REAL FIREBASE LOGIC: Listen for ride acceptance or rejection
     this.rideSub = this.rideService.currentRide$.subscribe(async (ride) => {
       if (ride && ride.status === 'accepted' && ride.driverId) {
         // Driver accepted the ride! Fetch their info
@@ -175,8 +232,17 @@ export class SearchingDriverComponent implements AfterViewInit, OnDestroy {
         // Navigate to Driver Found screen
         this.rideState.setStatus('driver-found');
         this.router.navigate(['/driver-found']);
+      } else if (ride && ride.status === 'rejected') {
+        // Show premium bottom sheet instead of browser alert
+        this.showRejectionPopup = true;
       }
     });
+  }
+
+  handleRejection() {
+    this.showRejectionPopup = false;
+    this.rideState.setStatus('idle');
+    this.router.navigate(['/ride-options']);
   }
 
   ngOnDestroy(): void {
