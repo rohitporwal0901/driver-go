@@ -1,9 +1,11 @@
 import { Injectable, inject } from '@angular/core';
-import { Firestore, doc, setDoc, deleteDoc, updateDoc } from '@angular/fire/firestore';
+import { Firestore, doc, setDoc, deleteDoc, collection, query, where, onSnapshot } from '@angular/fire/firestore';
 import { AuthService } from '../auth/auth.service';
 import { Geolocation } from '@capacitor/geolocation';
 import * as geofire from 'geofire-common';
 import { BehaviorSubject } from 'rxjs';
+import { Router } from '@angular/router';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable({
   providedIn: 'root'
@@ -11,11 +13,17 @@ import { BehaviorSubject } from 'rxjs';
 export class DriverService {
   private firestore = inject(Firestore);
   private authService = inject(AuthService);
+  private router = inject(Router);
+  private notifService = inject(NotificationService);
   
   private isOnlineSubject = new BehaviorSubject<boolean>(false);
   public isOnline$ = this.isOnlineSubject.asObservable();
   
   private watchId: string | null = null;
+  private rideListenerUnsubscribe: any = null;
+  
+  private currentLat = 0;
+  private currentLng = 0;
 
   constructor() { }
 
@@ -25,11 +33,55 @@ export class DriverService {
 
     if (isOnline) {
       await this.startTracking(profile.uid);
+      this.startRideListener();
       this.isOnlineSubject.next(true);
     } else {
       await this.stopTracking(profile.uid);
+      if (this.rideListenerUnsubscribe) {
+        this.rideListenerUnsubscribe();
+        this.rideListenerUnsubscribe = null;
+      }
       this.isOnlineSubject.next(false);
     }
+  }
+
+  private startRideListener() {
+    if (this.rideListenerUnsubscribe) this.rideListenerUnsubscribe();
+
+    const q = query(collection(this.firestore, 'rides'), where('status', '==', 'searching'));
+    
+    // Using onSnapshot to listen for changes
+    this.rideListenerUnsubscribe = onSnapshot(q, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === 'added') {
+          const data = change.doc.data();
+          
+          // Check if driver is within 5km of pickup location
+          if (data['pickupLat'] && data['pickupLng'] && this.currentLat !== 0) {
+            const distanceInKm = geofire.distanceBetween(
+              [this.currentLat, this.currentLng], 
+              [data['pickupLat'], data['pickupLng']]
+            );
+            
+            // If distance is greater than 5km, ignore this ride
+            if (distanceInKm > 5) {
+              console.log(`Ignoring ride request. Distance: ${distanceInKm.toFixed(2)} km`);
+              return;
+            }
+          }
+          
+          // Trigger the NotificationService and navigate
+          this.notifService.incomingRideSubject.next({
+            rideId: change.doc.id,
+            pickupAddress: data['pickupAddress'] || 'Unknown Pickup',
+            dropAddress: data['dropAddress'] || 'Unknown Drop',
+            distance: '4.5 km' // In a real app, calculate actual distance or use distanceInKm
+          });
+          
+          this.router.navigate(['/incoming-ride']);
+        }
+      });
+    });
   }
 
   private async startTracking(uid: string): Promise<void> {
@@ -41,11 +93,15 @@ export class DriverService {
 
     // Get initial position
     const position = await Geolocation.getCurrentPosition();
+    this.currentLat = position.coords.latitude;
+    this.currentLng = position.coords.longitude;
     await this.updateLocationInDb(uid, position.coords.latitude, position.coords.longitude);
 
     // Watch position
     this.watchId = await Geolocation.watchPosition({ enableHighAccuracy: true }, (position, err) => {
       if (position) {
+        this.currentLat = position.coords.latitude;
+        this.currentLng = position.coords.longitude;
         this.updateLocationInDb(uid, position.coords.latitude, position.coords.longitude);
       }
     });

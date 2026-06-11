@@ -5,6 +5,9 @@ import { RideStateService } from '../../services/ride-state.service';
 import { MockDataService } from '../../services/mock-data.service';
 import { MapService } from '../../services/map.service';
 import { Driver } from '../../models/ride.models';
+import { Firestore, collection, getDocs } from '@angular/fire/firestore';
+import { AuthService } from '../../services/auth/auth.service';
+import { inject } from '@angular/core';
 
 @Component({
   selector: 'app-ride-options',
@@ -191,12 +194,10 @@ export class RideOptionsComponent implements AfterViewInit, OnDestroy {
     private mapSvc: MapService,
   ) {}
 
-  ngAfterViewInit(): void {
-    this.availableDrivers = this.mockData.getAvailableDrivers();
-    this.filteredDrivers = [...this.availableDrivers];
-    this.selectedDriver = this.availableDrivers[0];
-    this.rideState.setDriver(this.selectedDriver);
+  private firestore = inject(Firestore);
+  private authService = inject(AuthService);
 
+  async ngAfterViewInit(): Promise<void> {
     const p = this.rideState.pickupLocation();
     const d = this.rideState.dropLocation();
     if (p) { this.pickupPos = [p.lat, p.lng]; this.fromName = p.name || p.city || ''; }
@@ -212,6 +213,52 @@ export class RideOptionsComponent implements AfterViewInit, OnDestroy {
       (this.pickupPos[1] + this.dropPos[1]) / 2,
     ];
 
+    try {
+      const activeSnap = await getDocs(collection(this.firestore, 'active_drivers'));
+      const realDrivers: Driver[] = [];
+      
+      for (const doc of activeSnap.docs) {
+        const data = doc.data();
+        const driverId = doc.id;
+        const profile = await this.authService.getUserProfile(driverId);
+        
+        realDrivers.push({
+          id: driverId,
+          name: profile ? profile.name : 'Unknown Driver',
+          photo: '🧑‍✈️',
+          rating: 4.8,
+          totalTrips: Math.floor(Math.random() * 500) + 10,
+          experience: '3 years',
+          languages: ['English', 'Hindi'],
+          licenseNo: 'DL-XXXX',
+          phone: '+91-9999999999',
+          lat: data['lat'] || center[0] + (Math.random() - 0.5) * 0.1,
+          lng: data['lng'] || center[1] + (Math.random() - 0.5) * 0.1,
+          isAvailable: true,
+          specialties: ['City'],
+          pricePerKm: 12 + Math.floor(Math.random() * 5),
+          baseCharge: 50
+        });
+      }
+      this.availableDrivers = realDrivers;
+    } catch (e) {
+      console.error('Error fetching drivers', e);
+      this.availableDrivers = [];
+    }
+
+    // Fallback if no drivers are active online
+    if (this.availableDrivers.length === 0) {
+      console.warn('No active drivers, using mock data fallback');
+      this.availableDrivers = this.mockData.getAvailableDrivers().slice(0, 2);
+    }
+
+    this.filteredDrivers = [...this.availableDrivers];
+    if (this.availableDrivers.length > 0) {
+      this.selectedDriver = this.availableDrivers[0];
+      this.rideState.setDriver(this.selectedDriver);
+    }
+
+
     setTimeout(() => {
       const map = this.mapSvc.createMap('drivers-map', center, 9);
       this.mapSvc.addDotMarker(map, 'pickup', this.pickupPos![0], this.pickupPos![1], '#22C55E', this.fromName);
@@ -221,9 +268,7 @@ export class RideOptionsComponent implements AfterViewInit, OnDestroy {
       this.mapSvc.drawRoute(map, 'route', [this.pickupPos!, mid, this.dropPos!], '#FFB800');
       // Show driver markers
       this.availableDrivers.forEach((drv, i) => {
-        const lat = center[0] + (Math.random() - 0.5) * 0.4;
-        const lng = center[1] + (Math.random() - 0.5) * 0.4;
-        this.mapSvc.addEmojiMarker(map, 'drv-' + i, lat, lng, '🚗', 24, false);
+        this.mapSvc.addEmojiMarker(map, 'drv-' + i, drv.lat, drv.lng, '🚗', 24, false);
       });
       this.mapSvc.fitBounds(map, [this.pickupPos!, this.dropPos!]);
     }, 100);

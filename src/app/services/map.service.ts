@@ -36,7 +36,7 @@ export class MapService {
       attributionControl: false,
     });
 
-    L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+    L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
       maxZoom: 20,
       subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
     }).addTo(map);
@@ -142,9 +142,9 @@ export class MapService {
 
   drawRoute(map: L.Map, id: string, points: [number, number][], color = '#000000', dashed = false): L.Polyline {
     if (this.polylines.has(id)) {
-        map.removeLayer(this.polylines.get(id)!);
+      map.removeLayer(this.polylines.get(id)!);
     }
-    
+
     // Draw white outline/background for the route line
     const outline = L.polyline(points, {
       color: '#ffffff',
@@ -153,7 +153,7 @@ export class MapService {
       lineJoin: 'round',
       lineCap: 'round',
     });
-    
+
     const line = L.polyline(points, {
       color: color,
       weight: 4,
@@ -162,10 +162,10 @@ export class MapService {
       lineJoin: 'round',
       lineCap: 'round',
     });
-    
+
     // Store as a feature group so both can be removed properly
     const group = L.featureGroup([outline, line]).addTo(map);
-    
+
     this.polylines.set(id, group as any);
     return line;
   }
@@ -248,14 +248,14 @@ export class MapService {
 
   async searchGooglePlaces(query: string): Promise<any[]> {
     if (!query) return [];
-    
+
     return new Promise((resolve) => {
       if (!(window as any).google?.maps?.places) {
         console.warn('Google Maps Places API not loaded or API key missing.');
         resolve([]);
         return;
       }
-      
+
       const service = new (window as any).google.maps.places.AutocompleteService();
       service.getPlacePredictions({ input: query, componentRestrictions: { country: 'in' } }, (predictions: any, status: any) => {
         if (status === (window as any).google.maps.places.PlacesServiceStatus.OK && predictions) {
@@ -273,10 +273,10 @@ export class MapService {
         resolve(null);
         return;
       }
-      
+
       const dummyDiv = document.createElement('div');
       const service = new (window as any).google.maps.places.PlacesService(dummyDiv);
-      
+
       service.getDetails({ placeId: placeId, fields: ['name', 'geometry', 'formatted_address'] }, (place: any, status: any) => {
         if (status === (window as any).google.maps.places.PlacesServiceStatus.OK && place?.geometry?.location) {
           resolve({
