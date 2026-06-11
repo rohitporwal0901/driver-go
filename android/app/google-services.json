@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "962764678417",
+    "project_id": "drivergo-4c1c8",
+    "storage_bucket": "drivergo-4c1c8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:962764678417:android:ae0c7cfae3441b229658b0",
+        "android_client_info": {
+          "package_name": "com.drivego.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBQDdOU1lE9vGlq9MHhK5bMOZeDKrucg88"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

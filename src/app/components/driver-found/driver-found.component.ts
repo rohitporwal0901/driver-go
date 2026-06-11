@@ -193,7 +193,8 @@ export class DriverFoundComponent implements AfterViewInit, OnDestroy {
       const map = this.mapSvc.createMap('found-map', p, 13);
       this.mapSvc.addDotMarker(map, 'fp', p[0], p[1], '#22C55E', 'Your Location');
       if (this.driver) {
-        const driverStart: [number, number] = [p[0] + 0.03, p[1] - 0.02];
+        const hasRealLoc = this.driver.lat && this.driver.lng && this.driver.lat !== 0;
+        const driverStart: [number, number] = hasRealLoc ? [this.driver.lat, this.driver.lng] : [p[0] + 0.03, p[1] - 0.02];
         this.mapSvc.addEmojiMarker(map, 'fdrv', driverStart[0], driverStart[1], this.driver.photo || '🚗', 34, true);
         this.mapSvc.drawRoute(map, 'farr', [driverStart, p], '#111111', true);
         // Animate driver approaching

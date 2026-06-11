@@ -4,6 +4,8 @@ import { CommonModule } from '@angular/common';
 import { MapService } from '../../services/map.service';
 import { RideStateService } from '../../services/ride-state.service';
 import { MockDataService } from '../../services/mock-data.service';
+import { RideService } from '../../services/ride/ride.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-searching-driver',
@@ -108,14 +110,15 @@ export class SearchingDriverComponent implements AfterViewInit, OnDestroy {
   ];
   private progInterval?: ReturnType<typeof setInterval>;
   private msgTimeout?: ReturnType<typeof setTimeout>;
-  private navTimeout?: ReturnType<typeof setTimeout>;
   private carInterval?: ReturnType<typeof setInterval>;
+  private rideSub?: Subscription;
 
   constructor(
     private router: Router,
     private rideState: RideStateService,
     private mock: MockDataService,
     private mapSvc: MapService,
+    private rideService: RideService
   ) { }
 
   ngAfterViewInit(): void {
@@ -160,21 +163,32 @@ export class SearchingDriverComponent implements AfterViewInit, OnDestroy {
     };
     updateMsg();
 
-    this.navTimeout = setTimeout(() => {
-      this.rideState.setStatus('driver-found');
-      this.router.navigate(['/driver-found']);
-    }, 4000);
+    // REAL FIREBASE LOGIC: Listen for ride acceptance
+    this.rideSub = this.rideService.currentRide$.subscribe(async (ride) => {
+      if (ride && ride.status === 'accepted' && ride.driverId) {
+        // Driver accepted the ride! Fetch their info
+        const realDriver = await this.rideService.getDriverDetails(ride.driverId);
+        if (realDriver) {
+          this.rideState.setDriver(realDriver);
+        }
+        
+        // Navigate to Driver Found screen
+        this.rideState.setStatus('driver-found');
+        this.router.navigate(['/driver-found']);
+      }
+    });
   }
 
   ngOnDestroy(): void {
     clearInterval(this.progInterval);
     clearInterval(this.carInterval);
     clearTimeout(this.msgTimeout);
-    clearTimeout(this.navTimeout);
+    if (this.rideSub) this.rideSub.unsubscribe();
     this.mapSvc.removeMap('search-map');
   }
 
   cancel(): void {
+    // Optionally also cancel the ride in Firebase
     this.rideState.setStatus('idle');
     this.router.navigate(['/home']);
   }
