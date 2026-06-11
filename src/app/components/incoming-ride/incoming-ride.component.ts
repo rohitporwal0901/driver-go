@@ -322,7 +322,7 @@ export class IncomingRideComponent implements OnInit {
   private router = inject(Router);
 
   rideData: any = null;
-  audio = new Audio('assets/ringtone.mp3');
+  audio = new Audio('/assets/ringtone.mp3');
 
   @ViewChild('track') trackElement!: ElementRef;
 
@@ -333,8 +333,21 @@ export class IncomingRideComponent implements OnInit {
   maxSwipe = 0;
 
   ngOnInit() {
+    this.audio.volume = 1;
     this.audio.loop = true;
-    this.audio.play().catch(e => console.log('Audio play blocked by browser', e));
+    this.audio.load();
+    
+    this.audio.play().catch(e => {
+      console.log('Audio play blocked by browser', e);
+      // Fallback for browsers that require user interaction
+      const playOnInteract = () => {
+        this.audio.play().catch(err => console.log('Retry failed', err));
+        document.removeEventListener('touchstart', playOnInteract);
+        document.removeEventListener('click', playOnInteract);
+      };
+      document.addEventListener('touchstart', playOnInteract);
+      document.addEventListener('click', playOnInteract);
+    });
 
     this.notifService.incomingRideSubject.subscribe(data => {
       if (data) {

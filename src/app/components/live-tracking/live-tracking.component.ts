@@ -228,8 +228,16 @@ export class LiveTrackingComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(public router: Router, private rideState: RideStateService, private mapSvc: MapService) {}
 
   ngOnInit() {
-    this.rideService.currentRide$.subscribe(ride => {
+    this.rideService.currentRide$.subscribe(async ride => {
       this.currentRide = ride;
+      
+      if (ride?.driverId && !this.driver) {
+        const driverData = await this.rideService.getDriverDetails(ride.driverId);
+        if (driverData) {
+          this.driver = driverData;
+        }
+      }
+
       if (ride?.status === 'started') {
         this.rideState.startTrip();
         this.router.navigate(['/on-ride']);
